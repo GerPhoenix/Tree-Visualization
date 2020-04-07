@@ -2,7 +2,7 @@
 ## Description
 Visualization tool for tree structures
 
-## Requirements
+## Required libaries
 [gs-core & gs-ui](http://graphstream-project.org/download/)
 
 ## How to
