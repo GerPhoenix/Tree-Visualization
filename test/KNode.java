@@ -1,4 +1,3 @@
-import javax.print.AttributeException;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -9,7 +8,7 @@ import java.util.stream.Collectors;
 /**
  * unsorted k tree. Is not following the degree rule. This is just meant to be used to quickly generate trees of random size.
  */
-public class KNode implements INode<Integer> {
+public class KNode implements VisualizableNode<Integer> {
     List<KNode> children = new LinkedList<>();
     Integer key;
     int depth;
@@ -21,7 +20,7 @@ public class KNode implements INode<Integer> {
     }
 
     @Override
-    public INode<Integer>[] getChildren() {
+    public VisualizableNode<Integer>[] getChildren() {
         KNode[] array = new KNode[children.size()];
         return children.toArray(array);
     }

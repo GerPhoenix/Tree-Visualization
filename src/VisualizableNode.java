@@ -3,7 +3,7 @@ import java.awt.*;
 /**
  * Required implementation for tree nodes if using {@link TreeVisualizer}
  */
-public interface INode<E> {
+public interface VisualizableNode<E> {
     /**
      * @return the key of this node
      */
@@ -12,7 +12,7 @@ public interface INode<E> {
     /**
      * @return children of this node
      */
-    INode<E>[] getChildren();
+    VisualizableNode<E>[] getChildren();
 
     /**
      * @return height of the tree or sub-tree

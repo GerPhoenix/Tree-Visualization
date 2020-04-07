@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 
 /**
- * Used to visualize tree structures implementing {@link INode} interface for their Nodes.
+ * Used to visualize tree structures implementing {@link VisualizableNode} interface for their Nodes.
  *
  * @param <E> Any but should overwrite {@link Object#toString} to correctly display the Node values
  * @see <a href="http://graphstream-project.org/" Uses Graphstream gs-core and gs-ui for visualization of the tree graph</a>
@@ -69,12 +69,12 @@ public class TreeVisualizer<E> {
      * Creates a new TreeVisualizer with provided settings. All settings can be changes afterwards using their setters.
      *
      * @param k             deg+
-     * @param useTreeLayout if the Tree View shall be applied if the tree is {@link TreeVisualizer#visualize(INode) displayed}.
+     * @param useTreeLayout if the Tree View shall be applied if the tree is {@link TreeVisualizer#visualize(VisualizableNode) displayed}.
      *                      Else use GraphStream <a href="http://graphstream-project.org/doc/Tutorials/Graph-Visualisation/1.0/#automatic-layout">automatic layout</a>.
-     * @param textSize      size of value letters if tree is {@link TreeVisualizer#visualize(INode) displayed}.
-     * @param nodeSize      size of the node if tree is {@link TreeVisualizer#visualize(INode) displayed}.
-     * @param color         color of the nodes if tree is {@link TreeVisualizer#visualize(INode) displayed}.
-     * @param mark          color of the nodes if tree is {@link TreeVisualizer#visualize(INode) displayed} and the node is marked (left click on node).
+     * @param textSize      size of value letters if tree is {@link TreeVisualizer#visualize(VisualizableNode) displayed}.
+     * @param nodeSize      size of the node if tree is {@link TreeVisualizer#visualize(VisualizableNode) displayed}.
+     * @param color         color of the nodes if tree is {@link TreeVisualizer#visualize(VisualizableNode) displayed}.
+     * @param mark          color of the nodes if tree is {@link TreeVisualizer#visualize(VisualizableNode) displayed} and the node is marked (left click on node).
      * @see Config default values
      */
     public TreeVisualizer(int k, boolean useTreeLayout, int textSize, int nodeSize, Color color, Color mark) {
@@ -212,7 +212,7 @@ public class TreeVisualizer<E> {
      *
      * @param root of a tree or subtree
      */
-    public void visualize(INode<E> root) {
+    public void visualize(VisualizableNode<E> root) {
         // clear graph
         reset();
         // draw root, using it's hashcode as id
@@ -234,13 +234,13 @@ public class TreeVisualizer<E> {
      * @param currentDepth current depth in the complete tree
      * @param maxDepth     maximum depth of the complete tree
      */
-    private void addNodesRecursive(INode<E> parentNode, int currentDepth, int maxDepth) {
+    private void addNodesRecursive(VisualizableNode<E> parentNode, int currentDepth, int maxDepth) {
         Node graphNode = graph.getNode(String.valueOf(parentNode.hashCode()));
         Object[] parentXYZ = graphNode.getAttribute("xyz");
-        INode<E>[] children = parentNode.getChildren();
+        VisualizableNode<E>[] children = parentNode.getChildren();
         //draws all children and edges to them. Recursively traverse children subtrees
         for (int i = 0; i < children.length; i++) {
-            INode<E> child = children[i];
+            VisualizableNode<E> child = children[i];
             // draw child, using it's hashcode as id
             Node childGraphNode = graph.addNode(String.valueOf(child.hashCode()));
             if (useTreeLayout) {
@@ -288,7 +288,7 @@ public class TreeVisualizer<E> {
      *
      * @param node  node to be configured
      * @param key   in string form to be assigned as graph node label
-     * @param color color of the node if one was provided by {@link INode#getColor()}
+     * @param color color of the node if one was provided by {@link VisualizableNode#getColor()}
      */
     private void configureNode(Node node, String key, Color color) {
         node.addAttribute("ui.label", key);
