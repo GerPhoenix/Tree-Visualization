@@ -83,7 +83,6 @@ public class TreeVisualizer<E> {
         this.k = k;
         this.useTreeLayout = useTreeLayout;
         graph = new GraphicGraph("Tree");
-        graphSetup();
         viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
 
         // BUILD CSS
@@ -101,6 +100,9 @@ public class TreeVisualizer<E> {
         markedStyle.set("text-style", "bold");
         markedStyle.set("stroke-width", "2");
         markedStyle.set("z-index", "1000");
+
+        // SETUP GRAPH
+        graphSetup();
 
         // SETUP MOUSE LISTENERS
         ViewPanel view_panel = viewer.addDefaultView(true);
