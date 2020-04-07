@@ -69,12 +69,12 @@ public class TreeVisualizer<E> {
      * Creates a new TreeVisualizer with provided settings. All settings can be changes afterwards using their setters.
      *
      * @param k             deg+
-     * @param useTreeLayout if the Tree View shall be applied if the tree is {@link TreeVisualizer#visualize(VisualizableNode) displayed}.
+     * @param useTreeLayout if the Tree View shall be applied if the tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
      *                      Else use GraphStream <a href="http://graphstream-project.org/doc/Tutorials/Graph-Visualisation/1.0/#automatic-layout">automatic layout</a>.
-     * @param textSize      size of value letters if tree is {@link TreeVisualizer#visualize(VisualizableNode) displayed}.
-     * @param nodeSize      size of the node if tree is {@link TreeVisualizer#visualize(VisualizableNode) displayed}.
-     * @param color         color of the nodes if tree is {@link TreeVisualizer#visualize(VisualizableNode) displayed}.
-     * @param mark          color of the nodes if tree is {@link TreeVisualizer#visualize(VisualizableNode) displayed} and the node is marked (left click on node).
+     * @param textSize      size of value letters if tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
+     * @param nodeSize      size of the node if tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
+     * @param color         color of the nodes if tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
+     * @param mark          color of the nodes if tree is {@link TreeVisualizer#draw(VisualizableNode) displayed} and the node is marked (left click on node).
      * @see Config default values
      */
     public TreeVisualizer(int k, boolean useTreeLayout, int textSize, int nodeSize, Color color, Color mark) {
@@ -214,7 +214,7 @@ public class TreeVisualizer<E> {
      *
      * @param root of a tree or subtree
      */
-    public void visualize(VisualizableNode<E> root) {
+    public void draw(VisualizableNode<E> root) {
         // clear graph
         reset();
         // draw root, using it's hashcode as id

@@ -9,7 +9,7 @@ public class Test {
         TreeVisualizer<Integer> visualizer = new TreeVisualizer<>(config);
         KNode root = new KNode(K, 20, 0, 1000);
         root.setColor(Color.green);
-        visualizer.visualize(root);
+        visualizer.draw(root);
 
     }
 }
