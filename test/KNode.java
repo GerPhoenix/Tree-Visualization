@@ -10,26 +10,20 @@ import java.util.stream.Collectors;
 /**
  * unsorted k tree. Is not following the degree rule. This is just meant to be used to quickly generate trees of random size.
  */
-public class KNode implements VisualizableNode<Integer> {
+public class KNode implements VisualizableNode {
     List<KNode> children = new LinkedList<>();
     Integer key;
-    int depth;
     Color color;
 
     @Override
-    public Integer getKeys() {
-        return key;
+    public Integer[] getKeys() {
+        return new Integer[]{key};
     }
 
     @Override
-    public VisualizableNode<Integer>[] getChildren() {
+    public VisualizableNode[] getChildren() {
         KNode[] array = new KNode[children.size()];
         return children.toArray(array);
-    }
-
-    @Override
-    public int height() {
-        return depth;
     }
 
     /**
@@ -50,7 +44,6 @@ public class KNode implements VisualizableNode<Integer> {
             valueList.add(random.nextInt(minValue + maxValue) - minValue);
         }
         values = valueList.toArray(new Integer[0]);
-        depth = calculateDepth(k, values.length - 1) + 1;
         this.key = values[0];
         values = Arrays.copyOfRange(values, 1, values.length);
         int rangeLength = values.length / k;
@@ -69,12 +62,6 @@ public class KNode implements VisualizableNode<Integer> {
             }
         }
         this.color = null;
-    }
-
-    private int calculateDepth(int k, int nodeAmount) {
-        if (nodeAmount > k)
-            return calculateDepth(k, nodeAmount / k) + 1;
-        else return 1;
     }
 
     public void setColor(Color color) {

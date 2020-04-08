@@ -297,7 +297,9 @@ public class TreeVisualizer {
     }
 
     private static int height(VisualizableNode visualizableNode) {
-        return Arrays.stream(visualizableNode.getChildren()).reduce(1, (a, b) -> a + height(b), Integer::sum);
+        return Arrays.stream(visualizableNode.getChildren())
+                .mapToInt(TreeVisualizer::height)
+                .max().orElse(0) + 1;
     }
 
     /**
