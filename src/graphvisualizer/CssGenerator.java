@@ -1,4 +1,4 @@
-package util;
+package graphvisualizer;
 
 import java.awt.Color;
 import java.util.Arrays;
@@ -7,17 +7,17 @@ import java.util.HashMap;
 /**
  * css wrapper class to easily generate dynamic css
  */
-public class Css {
+public class CssGenerator {
     private String element;
     private String selector;
     private String id;
     private HashMap<String, String> keyValues;
 
-    public Css(String element) {
+    public CssGenerator(String element) {
         this(element, "", "");
     }
 
-    public Css(String element, String selector, String id) {
+    public CssGenerator(String element, String selector, String id) {
         this.element = element;
         this.selector = selector;
         this.id = id;
@@ -64,7 +64,7 @@ public class Css {
      * @return css compliant String
      */
     public String toString() {
-        return Css.build(element + selector + " " + id, keyValues.entrySet().stream().reduce("", (str, b) -> str + b.getKey() + ": " + b.getValue() + ";", (a, b) -> a + b));
+        return CssGenerator.build(element + selector + " " + id, keyValues.entrySet().stream().reduce("", (str, b) -> str + b.getKey() + ": " + b.getValue() + ";", (a, b) -> a + b));
     }
 
     private static String build(String cssElement, String... keyValuePair) {

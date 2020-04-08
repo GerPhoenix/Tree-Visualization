@@ -1,3 +1,5 @@
+import graphvisualizer.VisualizableNode;
+
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -15,7 +17,7 @@ public class KNode implements VisualizableNode<Integer> {
     Color color;
 
     @Override
-    public Integer getKey() {
+    public Integer getKeys() {
         return key;
     }
 
