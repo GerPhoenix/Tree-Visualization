@@ -41,7 +41,7 @@ public class KNode implements VisualizableNode {
         List<Integer> valueList = Arrays.stream(values).collect(Collectors.toList());
         Random random = new Random();
         for (int i = 0; i < amountOfRandomValues; i++) {
-            valueList.add(random.nextInt(minValue + maxValue) - minValue);
+            valueList.add(random.nextInt(maxValue-minValue) + minValue);
         }
         values = valueList.toArray(new Integer[0]);
         this.key = values[0];

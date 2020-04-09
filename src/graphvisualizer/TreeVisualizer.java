@@ -5,6 +5,7 @@ import org.graphstream.ui.geom.Point3;
 import org.graphstream.ui.graphicGraph.GraphicElement;
 import org.graphstream.ui.graphicGraph.GraphicGraph;
 import org.graphstream.ui.layout.LayoutRunner;
+import org.graphstream.ui.spriteManager.SpriteManager;
 import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.Camera;
 import org.graphstream.ui.view.Viewer;
@@ -12,13 +13,13 @@ import org.graphstream.ui.view.util.DefaultMouseManager;
 
 import javax.swing.*;
 import java.awt.*;
-
-import java.awt.event.*;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * Used to visualize tree structures implementing {@link VisualizableNode} interface for their Nodes.
@@ -32,21 +33,18 @@ import java.util.stream.Collectors;
 public class TreeVisualizer {
 
     public final static int DEFAULT_TEXT_SIZE = 12;
-    public final static int DEFAULT_NODE_SIZE = 35;
+    public final static int DEFAULT_NODE_SIZE = 36;
     public final static boolean DEFAULT_USE_TREE_LAYOUT = true;
     public final static Color DEFAULT_NODE_COLOR = Color.white;
     public final static Color DEFAULT_MARK_COLOR = Color.white;
 
     private final static double X_SCALE = 50;
-    private final static double Y_SCALE = 120;
-
+    public static final double Y_OFFSET = 300;
 
     private GraphicGraph graph;
     private Viewer viewer;
     private CssGenerator generalStyle;
-
     private CssGenerator markedStyle;
-
     private int k;
     private boolean useTreeLayout;
 
@@ -84,8 +82,9 @@ public class TreeVisualizer {
      * @see Config default values
      */
     public TreeVisualizer(int k, boolean useTreeLayout, int textSize, int nodeSize, Color color, Color mark) {
-        // INITIALIZE ATTRIBUTES
+        // SELECT RENDERER
         System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
+        // INITIALIZE ATTRIBUTES
         this.k = k;
         this.useTreeLayout = useTreeLayout;
         graph = new GraphicGraph("Tree");
@@ -226,18 +225,17 @@ public class TreeVisualizer {
         // draw root, using it's hashcode as id
         Node graphRoot = graph.addNode(String.valueOf(root.hashCode()));
         // Stringify key so it can be displayed
-        String rootKeyString = getKey(root);
-        configureNode(graphRoot, rootKeyString, root.getColor());
+        String[] rootKeyStrings = getKeys(root);
+        configureNode(graphRoot, rootKeyStrings, root.getColor());
         if (useTreeLayout)
             graphRoot.setAttribute("xyz", 0.0, 0.0, 0.0);
         // traverse tree recursive drawing all nodes
         addNodesRecursive(root, 1, height(root));
     }
 
-    private String getKey(VisualizableNode node) {
+    private String[] getKeys(VisualizableNode node) {
         return Arrays.stream(node.getKeys())
-                .map(Object::toString)
-                .collect(Collectors.joining(" | "));
+                .map(Object::toString).toArray(String[]::new);
     }
 
     /**
@@ -260,13 +258,13 @@ public class TreeVisualizer {
             if (useTreeLayout) {
                 // calculate custom node position
                 double x = calculateNodeXPosition((double) parentXYZ[0], i, children.length, currentDepth, maxDepth);
-                double y = (double) parentXYZ[1] + maxDepth * Y_SCALE;
+                double y = (double) parentXYZ[1] + Y_OFFSET;
                 childGraphNode.setAttribute("xyz", x, y, 0);
             }
             drawEdge(graphNode, childGraphNode);
             // Stringify key so it can be displayed
-            String childKeyString = getKey(child);
-            configureNode(childGraphNode, childKeyString, child.getColor());
+            String[] childKeyStrings = getKeys(child);
+            configureNode(childGraphNode, childKeyStrings, child.getColor());
             // traverse child subtree
             addNodesRecursive(child, currentDepth + 1, maxDepth);
         }
@@ -306,17 +304,26 @@ public class TreeVisualizer {
      * Configure the provided node
      *
      * @param node  node to be configured
-     * @param key   in string form to be assigned as graph node label
+     * @param keys  in string form to be assigned as graph node label
      * @param color color of the node if one was provided by {@link VisualizableNode#getColor()}
      */
-    private void configureNode(Node node, String key, Color color) {
-        node.addAttribute("ui.label", key);
+    private void configureNode(Node node, String[] keys, Color color) {
+        String unitedKey = String.join(" | ", keys);
+        node.addAttribute("ui.label", unitedKey);
         node.addAttribute("ui.class", "unmarked");
-        if (color != null) {
-            CssGenerator nodeCss = new CssGenerator("node", "#", node.getId());
-            nodeCss.set("fill-color", CssGenerator.rgbString(color));
-            graph.setAttribute("ui.stylesheet", graph.getAttribute("ui.stylesheet") + nodeCss.toString());
+        CssGenerator nodeCss = new CssGenerator("node", "#", node.getId());
+        if (keys.length > 1) {
+            // if any node has more then 1 value set shape of all nodes to "box"
+            CssGenerator generalCss = new CssGenerator("node");
+            generalCss.set("shape", "rounded-box");
+            graph.setAttribute("ui.stylesheet", graph.getAttribute("ui.stylesheet") + generalCss.toString());
+
+            nodeCss.set("size", getNodeSize() * keys.length + "px, " + (getTextSize() + 2) + "px");
         }
+        if (color != null) {
+            nodeCss.set("fill-color", CssGenerator.rgbString(color));
+        }
+        graph.setAttribute("ui.stylesheet", graph.getAttribute("ui.stylesheet") + nodeCss.toString());
 
     }
 
