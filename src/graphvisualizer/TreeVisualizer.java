@@ -36,9 +36,8 @@ public class TreeVisualizer {
     public final static int DEFAULT_NODE_SIZE = 36;
     public final static boolean DEFAULT_USE_TREE_LAYOUT = true;
     public final static Color DEFAULT_NODE_COLOR = Color.white;
-    public final static Color DEFAULT_MARK_COLOR = new Color(255, 195, 195);
-    public final static Color DEFAULT_ROOT_COLOR = new Color(255, 102, 102); 
-    //private static final Color[] NODE_COLORS = {new Color(153, 0, 0), new Color(204, 0, 0), new Color(255, 0, 0), new Color(255, 102, 102), new Color(255, 179, 179)};
+    public final static Color DEFAULT_MARKED_COLOR = new Color(255, 195, 195);
+    public final static Color DEFAULT_ROOT_COLOR = new Color(255, 102, 102);
 
     private final static double X_SCALE = 50;
     public static final double Y_OFFSET = 300;
@@ -57,7 +56,7 @@ public class TreeVisualizer {
      * @see Config default values
      */
     public TreeVisualizer(int k) {
-        this(k, DEFAULT_USE_TREE_LAYOUT, DEFAULT_TEXT_SIZE, DEFAULT_NODE_SIZE, DEFAULT_NODE_COLOR, DEFAULT_MARK_COLOR);
+        this(k, DEFAULT_USE_TREE_LAYOUT, DEFAULT_TEXT_SIZE, DEFAULT_NODE_SIZE, DEFAULT_NODE_COLOR, DEFAULT_MARKED_COLOR);
     }
 
     /**
@@ -67,7 +66,7 @@ public class TreeVisualizer {
      * @see Config default values
      */
     public TreeVisualizer(Config config) {
-        this(config.k, config.useTreeLayout, config.textSize, config.nodeSize, config.color, config.mark);
+        this(config.k, config.useTreeLayout, config.textSize, config.nodeSize, config.color, config.marked);
     }
 
 
@@ -436,7 +435,7 @@ public class TreeVisualizer {
      * <p>textSize = {@value #DEFAULT_TEXT_SIZE }</p>
      * <p>nodeSize = {@value #DEFAULT_NODE_SIZE }</p>
      * <p>color = {@link #DEFAULT_NODE_COLOR }</p>
-     * <p>mark = {@link #DEFAULT_MARK_COLOR }</p>
+     * <p>mark = {@link #DEFAULT_MARKED_COLOR }</p>
      */
     public static final class Config {
         public int k;
@@ -444,7 +443,7 @@ public class TreeVisualizer {
         public int textSize = DEFAULT_TEXT_SIZE;
         public int nodeSize = DEFAULT_NODE_SIZE;
         public Color color = DEFAULT_NODE_COLOR;
-        public Color mark = DEFAULT_MARK_COLOR;
+        public Color marked = DEFAULT_MARKED_COLOR;
 
         /**
          * Config Object for easy initialization of TreeVisualizer Objects

@@ -8,7 +8,6 @@ public class Test {
     public static void main(String[] args) {
         TreeVisualizer visualizer = new TreeVisualizer(K);
         KNode root = new KNode(K, 10, 1000, 2000);
-        root.setColor(Color.green);
         visualizer.draw(root);
     }
 }
