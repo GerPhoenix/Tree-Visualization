@@ -36,7 +36,9 @@ public class TreeVisualizer {
     public final static int DEFAULT_NODE_SIZE = 36;
     public final static boolean DEFAULT_USE_TREE_LAYOUT = true;
     public final static Color DEFAULT_NODE_COLOR = Color.white;
-    public final static Color DEFAULT_MARK_COLOR = Color.white;
+    public final static Color DEFAULT_MARK_COLOR = new Color(255, 195, 195);
+    public final static Color DEFAULT_ROOT_COLOR = new Color(255, 102, 102); 
+    //private static final Color[] NODE_COLORS = {new Color(153, 0, 0), new Color(204, 0, 0), new Color(255, 0, 0), new Color(255, 102, 102), new Color(255, 179, 179)};
 
     private final static double X_SCALE = 50;
     public static final double Y_OFFSET = 300;
@@ -99,6 +101,11 @@ public class TreeVisualizer {
         generalStyle.set("stroke-width", "1");
         generalStyle.set("text-size", String.valueOf(textSize));
         generalStyle.set("fill-color", CssGenerator.rgbString(color));
+        generalStyle.set("shadow-mode", "gradient-radial");
+        generalStyle.set("shadow-width", "0px");
+        generalStyle.set("shadow-color", "#999, white");
+        generalStyle.set("shadow-offset", "3px, -3px");
+        
 
         markedStyle = new CssGenerator("node", ".", "marked");
         markedStyle.set("fill-color", CssGenerator.rgbString(mark));
@@ -226,7 +233,7 @@ public class TreeVisualizer {
         Node graphRoot = graph.addNode(String.valueOf(root.hashCode()));
         // Stringify key so it can be displayed
         String[] rootKeyStrings = getKeys(root);
-        configureNode(graphRoot, rootKeyStrings, root.getColor());
+        configureNode(graphRoot, rootKeyStrings, DEFAULT_ROOT_COLOR);
         if (useTreeLayout)
             graphRoot.setAttribute("xyz", 0.0, 0.0, 0.0);
         // traverse tree recursive drawing all nodes
