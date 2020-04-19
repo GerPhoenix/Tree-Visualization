@@ -3,14 +3,15 @@ package graphvisualizer;
 import java.awt.*;
 
 /**
- * Required implementation for tree nodes if you want to use the {@link TreeVisualizer}.
- * see {@link TreeVisualizer}
+ * Required implementation for tree nodes if you want to use the {@link TreeVisualizer}. <br><br>
+ *
+ * @implSpec keys should implement a proper version of {@link Object#toString() toString} as {@link TreeVisualizer} will stringify the keys.<br><br>
+ * @implNote If the nodes can only have one value consider implementing the {@link VisualizableOneKeyNode} interface instead.<br><br>
+ * @see TreeVisualizer
  */
 public interface VisualizableNode {
 
     /**
-     * If the nodes can only have one value consider implementing the {@link VisualizableOneKeyNode} interface instead
-     *
      * @return the keys of this node.
      */
     Object[] getKeys();
