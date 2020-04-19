@@ -38,7 +38,7 @@ public class KNode implements VisualizableNode {
     /**
      * Creates an unsorted tree. Is not following the degree rule. This is just meant to be used to quickly generate Trees of random size.
      *
-     * @param k             dge+
+     * @param k             max deg+
      * @param amountOfKeys  amount of keys each node should have. Out of simplicity, just uses the same value multiple times
      * @param amountOfNodes amount of random values that should be inserted in the tree
      * @param minValue      Minimum value of the random values
