@@ -9,8 +9,9 @@ import java.awt.*;
 public interface VisualizableNode {
 
     /**
+     * If the nodes can only have one value consider implementing the {@link VisualizableOneKeyNode} interface instead
+     *
      * @return the keys of this node.
-     * If this node only has one key, use <code>return new Object[] {key}</code>
      */
     Object[] getKeys();
 
@@ -22,7 +23,7 @@ public interface VisualizableNode {
     /**
      * Overwrite in subclass to easily manage which color a specific node should have if it is drawn with {@link TreeVisualizer}
      *
-     * @return background color for the node when drawn with the {@link TreeVisualizer}. If null is returned the default color is used.
+     * @return background color for the node when drawn with the {@link TreeVisualizer}. If null is returned the default color specified by the TreeVisualizer is used.
      */
     default Color getColor() {
         return null;
