@@ -2,10 +2,7 @@ package graphvisualizer;
 
 import org.graphstream.graph.Node;
 import org.graphstream.ui.geom.Point3;
-import org.graphstream.ui.graphicGraph.GraphicElement;
 import org.graphstream.ui.graphicGraph.GraphicGraph;
-import org.graphstream.ui.layout.LayoutRunner;
-import org.graphstream.ui.spriteManager.SpriteManager;
 import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.Camera;
 import org.graphstream.ui.view.Viewer;
@@ -18,96 +15,102 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Used to visualize tree structures implementing {@link VisualizableNode} interface for their Nodes.
  * <p>
  * How to use:<br>
  * <code>new {@link #TreeVisualizer(int)}.{@link #draw(VisualizableNode)};</code><br>
- * There are also other {@link #TreeVisualizer(int, boolean, int, int, Color, Color) constructors} available to do more advanced things.
+ * There are also other {@link #TreeVisualizer(int, boolean, YOffsetMode, int, Color, Color) constructors} available to do more advanced things.
  *
  * @see <a href="http://graphstream-project.org/" Uses Graphstream gs-core and gs-ui for visualization of the tree graph</a>
  */
 public class TreeVisualizer {
 
-    public final static int DEFAULT_TEXT_SIZE = 12;
-    public final static int DEFAULT_NODE_SIZE = 36;
-    public final static boolean DEFAULT_USE_TREE_LAYOUT = true;
-    public final static Color DEFAULT_NODE_COLOR = Color.white;
-    public final static Color DEFAULT_MARK_COLOR = Color.white;
+    public static final int DEFAULT_TEXT_SIZE = 14;
+    public static final boolean DEFAULT_ENABLE_TREE_LAYOUT = true;
+    public static final YOffsetMode DEFAULT_ENABLE_Y_OFFSET = YOffsetMode.AUTO;
+    public static final Color DEFAULT_NODE_COLOR = Color.white;
+    public static final Color DEFAULT_MARK_COLOR = Color.white;
 
-    private final static double X_SCALE = 50;
-    public static final double Y_OFFSET = 300;
+    private static final double X_SCALE = 50;
+    private static final double Y = 300;
+
+    private int k;
+    private boolean useTreeLayout;
+    private YOffsetMode enableYOffsetMode;
 
     private GraphicGraph graph;
     private Viewer viewer;
+    private ViewPanel viewPanel;
     private CssGenerator generalStyle;
     private CssGenerator markedStyle;
-    private int k;
-    private boolean useTreeLayout;
+
+    // flag stating if a node containing multiple keys was found while drawing. Is set to false upon reset.
+    private boolean multipleKeys;
+    private int nodeAmount;
 
     /**
-     * Calls {@link TreeVisualizer#TreeVisualizer(int, boolean, int, int, Color, Color)} with provided k and the {@link Config default values}
+     * Calls {@link TreeVisualizer#TreeVisualizer(int, boolean, YOffsetMode, int, Color, Color)} with provided k and the {@link Config default values}
      *
-     * @param k deg+
+     * @param k max deg+
      * @see Config default values
      */
     public TreeVisualizer(int k) {
-        this(k, DEFAULT_USE_TREE_LAYOUT, DEFAULT_TEXT_SIZE, DEFAULT_NODE_SIZE, DEFAULT_NODE_COLOR, DEFAULT_MARK_COLOR);
+        this(k, DEFAULT_ENABLE_TREE_LAYOUT, DEFAULT_ENABLE_Y_OFFSET, DEFAULT_TEXT_SIZE, DEFAULT_NODE_COLOR, DEFAULT_MARK_COLOR);
     }
 
     /**
-     * Calls {@link TreeVisualizer#TreeVisualizer(int, boolean, int, int, Color, Color)} with using arguments provided in the {@link Config} parameter
+     * Calls {@link TreeVisualizer#TreeVisualizer(int, boolean, YOffsetMode, int, Color, Color)} with using arguments provided in the {@link Config} parameter
      *
      * @param config {@link Config} initialize TreeVisualizer with provided Attributes.
      * @see Config default values
      */
     public TreeVisualizer(Config config) {
-        this(config.k, config.useTreeLayout, config.textSize, config.nodeSize, config.color, config.mark);
+        this(config.k, config.enableTreeLayout, config.enableYOffsetMode, config.textSize, config.color, config.mark);
     }
 
 
     /**
      * Creates a new TreeVisualizer with provided settings. All settings can be changes afterwards using their setters.
      *
-     * @param k             deg+
-     * @param useTreeLayout if the Tree View shall be applied if the tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
-     *                      Else use GraphStream <a href="http://graphstream-project.org/doc/Tutorials/Graph-Visualisation/1.0/#automatic-layout">automatic layout</a>.
-     * @param textSize      size of value letters if tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
-     * @param nodeSize      size of the node if tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
-     * @param color         color of the nodes if tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
-     * @param mark          color of the nodes if tree is {@link TreeVisualizer#draw(VisualizableNode) displayed} and the node is marked (left click on node).
+     * @param k                 max deg+
+     * @param enableTreeLayout  if the Tree View shall be applied when the tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
+     *                          Else use GraphStream <a href="http://graphstream-project.org/doc/Tutorials/Graph-Visualisation/1.0/#automatic-layout">automatic layout</a>.
+     * @param enableYOffsetMode {@link YOffsetMode YOffsetMode} if an alternating y offset should be applied to neighbouring children when the tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
+     * @param textSize          size of value letters when tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
+     * @param color             color of the nodes when tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
+     * @param mark              color of the nodes when tree is {@link TreeVisualizer#draw(VisualizableNode) displayed} and the node is marked (left click on node).
      * @see Config default values
      */
-    public TreeVisualizer(int k, boolean useTreeLayout, int textSize, int nodeSize, Color color, Color mark) {
+    public TreeVisualizer(int k, boolean enableTreeLayout, YOffsetMode enableYOffsetMode, int textSize, Color color, Color mark) {
+        this.enableYOffsetMode = enableYOffsetMode;
         // SELECT RENDERER
         System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
         // INITIALIZE ATTRIBUTES
         this.k = k;
-        this.useTreeLayout = useTreeLayout;
+        this.useTreeLayout = enableTreeLayout;
         graph = new GraphicGraph("Tree");
         viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
 
         // BUILD CSS
         generalStyle = new CssGenerator("node");
-        generalStyle.set("size", nodeSize + "px, " + nodeSize + "px");
         generalStyle.set("fill-mode", "plain");
+        generalStyle.set("fill-color", CssGenerator.rgbString(color));
+        generalStyle.set("shadow-mode", "gradient-radial");
+        generalStyle.set("shadow-color", "#999, white");
+        generalStyle.set("shadow-width", "0px");
+        generalStyle.set("shadow-offset", "3px, -3px");
         generalStyle.set("stroke-mode", "plain");
         generalStyle.set("stroke-color", "black");
         generalStyle.set("stroke-width", "1");
+        generalStyle.set("text-font", Font.MONOSPACED);
+        generalStyle.set("text-color", CssGenerator.rgbString(Color.black));
         generalStyle.set("text-size", String.valueOf(textSize));
-        generalStyle.set("fill-color", CssGenerator.rgbString(color));
-        generalStyle.set("shadow-mode", "gradient-radial");
-        generalStyle.set("shadow-width", "0px");
-        generalStyle.set("shadow-color", "#999, white");
-        generalStyle.set("shadow-offset", "3px, -3px");
-        
 
         markedStyle = new CssGenerator("node", ".", "marked");
-        markedStyle.set("fill-color", CssGenerator.rgbString(mark));
         markedStyle.set("text-style", "bold");
+        markedStyle.set("fill-color", CssGenerator.rgbString(mark));
         markedStyle.set("stroke-width", "2");
         markedStyle.set("z-index", "1000");
 
@@ -115,16 +118,15 @@ public class TreeVisualizer {
         graphSetup();
 
         // SETUP MOUSE LISTENERS
-        ViewPanel view_panel = viewer.addDefaultView(true);
+        ViewPanel view_panel_frame = viewer.addDefaultView(true);
+        viewPanel = viewer.getDefaultView();
         // remove GraphStream default MouseListener
-        view_panel.removeMouseListener(view_panel.getMouseListeners()[0]);
+        view_panel_frame.removeMouseListener(view_panel_frame.getMouseListeners()[0]);
         // Assign our own Mouse Listener which is making some changes to the GraphStream default MouseListener
         TreeMouseManager mouseManager = new TreeMouseManager();
-        mouseManager.init(graph, viewer.getDefaultView());
-        view_panel.addMouseMotionListener(mouseManager);
-        view_panel.addMouseListener(mouseManager);
+        mouseManager.init(graph, viewPanel);
         //add a mouse wheel listener to the ViewPanel for zooming the graph
-        view_panel.addMouseWheelListener(e -> TreeVisualizer.zoomGraphMouseWheelMoved(e, viewer.getDefaultView()));
+        view_panel_frame.addMouseWheelListener(e -> TreeVisualizer.zoomGraphMouseWheelMoved(e, viewPanel));
     }
 
     public int getK() {
@@ -143,21 +145,20 @@ public class TreeVisualizer {
         generalStyle.set("text-size", String.valueOf(textSize));
     }
 
-    public int getNodeSize() {
-        String size = generalStyle.get("size");
-        return Integer.parseInt(size.split("p")[0]);
-    }
-
-    public void setNodeSize(int nodeSize) {
-        generalStyle.set("size", nodeSize + "px, " + nodeSize + "px");
-    }
-
-    public boolean isAutoLayout() {
+    public boolean isTreeLayout() {
         return useTreeLayout;
     }
 
-    public void enableTreeLayout(boolean bol) {
-        this.useTreeLayout = bol;
+    public void enableTreeLayout(YOffsetMode enableYOffsetMode) {
+        this.enableYOffsetMode = enableYOffsetMode;
+    }
+
+    public YOffsetMode isEnableYOffsetMode() {
+        return enableYOffsetMode;
+    }
+
+    public void setEnableYOffsetMode(YOffsetMode enableYOffsetMode) {
+        this.enableYOffsetMode = enableYOffsetMode;
     }
 
     public String getNodeColor() {
@@ -177,41 +178,28 @@ public class TreeVisualizer {
         markedStyle.set("fill-color", CssGenerator.rgbString(color));
     }
 
-    /**
-     * @param factor scale for text size and node size
-     * @see #scale(float, float)
-     */
-    public void scale(float factor) {
-        scale(factor, factor);
-    }
-
-    /**
-     * Scales text size and node size
-     *
-     * @param textScale text scale
-     * @param nodeScale node scale
-     * @see #DEFAULT_TEXT_SIZE
-     * @see #DEFAULT_NODE_SIZE
-     */
-    public void scale(float textScale, float nodeScale) {
+    public void scale(float textScale) {
         setTextSize((int) (getTextSize() * textScale));
-        setNodeSize((int) (getNodeSize() * nodeScale));
-
     }
-
 
     /**
      * reset the graph and perform a default setup
      */
     private void reset() {
+        viewer.getDefaultView().setVisible(false);
         graph.clear();
+        multipleKeys = false;
         graphSetup();
+
     }
 
+    /**
+     * Default graph setup
+     */
     private void graphSetup() {
-        // disable Logger so warnings that seems to have no effect won't be shown#
-        Logger.getLogger(GraphicGraph.class.getSimpleName()).setLevel(Level.OFF);
-        Logger.getLogger(LayoutRunner.class.getSimpleName()).setLevel(Level.OFF);
+//        disable Logger so warnings that seems to have no effect won't be shown#
+//        Logger.getLogger(GraphicGraph.class.getSimpleName()).setLevel(Level.OFF);
+//        Logger.getLogger(LayoutRunner.class.getSimpleName()).setLevel(Level.OFF);
         if (useTreeLayout)
             viewer.disableAutoLayout();
         else
@@ -227,6 +215,24 @@ public class TreeVisualizer {
     public void draw(VisualizableNode root) {
         // clear graph
         reset();
+        int height = getHeightCountNodesAndCheckForMultipleKeys(root);
+
+        // Zoom in because the view my lag if to many nodes are visible at the same time
+        if (nodeAmount > 300)
+            if (nodeAmount > 500)
+                if (nodeAmount > 700)
+                    viewPanel.getCamera().setViewPercent(0.3);
+                else
+                    viewPanel.getCamera().setViewPercent(0.35);
+            else
+                viewPanel.getCamera().setViewPercent(0.45);
+
+        if (multipleKeys) {
+            // if any node has more then 1 value set shape of all nodes to "box"
+            CssGenerator generalCss = new CssGenerator("node");
+            generalCss.set("shape", "rounded-box");
+            graph.setAttribute("ui.stylesheet", graph.getAttribute("ui.stylesheet") + generalCss.toString());
+        }
         // draw root, using it's hashcode as id
         Node graphRoot = graph.addNode(String.valueOf(root.hashCode()));
         // Stringify key so it can be displayed
@@ -235,7 +241,8 @@ public class TreeVisualizer {
         if (useTreeLayout)
             graphRoot.setAttribute("xyz", 0.0, 0.0, 0.0);
         // traverse tree recursive drawing all nodes
-        addNodesRecursive(root, 1, height(root));
+        addNodesRecursive(root, 1, height);
+        viewer.getDefaultView().setVisible(true);
     }
 
     private String[] getKeys(VisualizableNode node) {
@@ -263,7 +270,7 @@ public class TreeVisualizer {
             if (useTreeLayout) {
                 // calculate custom node position
                 double x = calculateNodeXPosition((double) parentXYZ[0], i, children.length, currentDepth, maxDepth);
-                double y = (double) parentXYZ[1] + Y_OFFSET;
+                double y = calculateNodeYPosition((double) parentXYZ[1], i, multipleKeys, currentDepth, maxDepth);
                 childGraphNode.setAttribute("xyz", x, y, 0);
             }
             drawEdge(graphNode, childGraphNode);
@@ -279,29 +286,68 @@ public class TreeVisualizer {
 
     /**
      * calculates the x position for a child at a specific index
-     * Note: calculation for the distance was decided by trial and error for the most part
      *
      * @param parentX          parent node x position
-     * @param AmountOfChildren total amount of children of the parent
      * @param childIndex       index of the child in parents children list
+     * @param AmountOfChildren total amount of children of the parent
      * @param currentDepth     current depth in the complete tree
      * @param maxDepth         total depth the complete tree will reach
      * @return child node x position
      */
-    private double calculateNodeXPosition(double parentX, double childIndex, int AmountOfChildren,
+    private double calculateNodeXPosition(double parentX, int childIndex, int AmountOfChildren,
                                           int currentDepth, int maxDepth) {
         if (AmountOfChildren == 1)
             return parentX;
         double distanceDecay = Math.pow(k, currentDepth);
+        // calculation of "distance" was decided by trial and error in terms of how k and maxDepth affected it.
         double distance = X_SCALE * k * k * maxDepth * maxDepth / distanceDecay;
         double xStart = parentX - distance / 2;
         double distanceBetweenChildren = distance / (AmountOfChildren - 1);
         return xStart + distanceBetweenChildren * childIndex;
     }
 
-    private static int height(VisualizableNode visualizableNode) {
+    /**
+     * @param parentY      parent node Y position
+     * @param childIndex   index of the child in parents children list
+     * @param multipleKeys if the current tree contains nodes with multiple values
+     * @param currentDepth current depth in the complete tree
+     * @param maxDepth     total depth the complete tree will reach
+     * @return child node y position
+     */
+    private double calculateNodeYPosition(double parentY, int childIndex, boolean multipleKeys, int currentDepth, int maxDepth) {
+        double y = parentY + Y;
+        if (enableYOffsetMode == YOffsetMode.ON)
+            y += childIndex * 1.25 * (getTextSize() + getHeightPadding()) * ((currentDepth % 2) * 2 + -1);
+        else if (enableYOffsetMode == YOffsetMode.AUTO)
+            y += autoYOffset(k, multipleKeys, maxDepth) ? childIndex * 1.25 * (getTextSize() + getHeightPadding()) * ((currentDepth % 2) * 2 + -1) : 0;
+        return y;
+    }
+
+    /**
+     * Decides if an YOffset should be applied to the tree <br>
+     * <br>
+     * In general:<br>
+     * if the tree reaches certain depth by high enough k the y offset is applied.<br>
+     * if the tree contains multiple keys the y offset is applied
+     *
+     * @param k                        max deg+
+     * @param treeContainsMultipleKeys if the currently drawn tree contains multiple keys
+     * @param maxDepth                 the maximum depth of the currently drawn tree
+     * @return if a YOffset should be applied
+     */
+    private boolean autoYOffset(int k, boolean treeContainsMultipleKeys, int maxDepth) {
+        return treeContainsMultipleKeys && maxDepth > 2 || k * maxDepth > 16;
+    }
+
+    private int getHeightCountNodesAndCheckForMultipleKeys(VisualizableNode visualizableNode) {
+        nodeAmount++;
         return Arrays.stream(visualizableNode.getChildren())
-                .mapToInt(TreeVisualizer::height)
+                .mapToInt((node) -> {
+                            if (node.getKeys().length > 1)
+                                multipleKeys = true;
+                            return getHeightCountNodesAndCheckForMultipleKeys(node);
+                        }
+                )
                 .max().orElse(0) + 1;
     }
 
@@ -313,23 +359,28 @@ public class TreeVisualizer {
      * @param color color of the node if one was provided by {@link VisualizableNode#getColor()}
      */
     private void configureNode(Node node, String[] keys, Color color) {
-        String unitedKey = String.join(" | ", keys);
+        String delimiter = " | ";
+        String unitedKey = String.join(delimiter, keys);
         node.addAttribute("ui.label", unitedKey);
         node.addAttribute("ui.class", "unmarked");
         CssGenerator nodeCss = new CssGenerator("node", "#", node.getId());
-        if (keys.length > 1) {
-            // if any node has more then 1 value set shape of all nodes to "box"
-            CssGenerator generalCss = new CssGenerator("node");
-            generalCss.set("shape", "rounded-box");
-            graph.setAttribute("ui.stylesheet", graph.getAttribute("ui.stylesheet") + generalCss.toString());
-
-            nodeCss.set("size", getNodeSize() * keys.length + "px, " + (getTextSize() + 2) + "px");
-        }
         if (color != null) {
             nodeCss.set("fill-color", CssGenerator.rgbString(color));
         }
+        // Calculate node size
+        float delimiterLength = delimiter.length();
+        // for some reason stroke size is actually closer to 2 then 1 despite setting it to 1 in the generalStyle css.
+        float strokeWidth = 2f;
+        float widthPaddingWithBorderSize = getTextSize() * delimiterLength / 2f + 2 * strokeWidth;
+        float nodeWidth = (Arrays.stream(keys).mapToInt(String::length).sum() + delimiterLength * (keys.length - 1)) * getTextSize() * 0.6f;
+        float nodeHeight = multipleKeys ? getTextSize() + getHeightPadding() : nodeWidth + widthPaddingWithBorderSize;
+        nodeCss.set("size", (nodeWidth + widthPaddingWithBorderSize) + "px, " + nodeHeight + "px");
         graph.setAttribute("ui.stylesheet", graph.getAttribute("ui.stylesheet") + nodeCss.toString());
 
+    }
+
+    private float getHeightPadding() {
+        return getTextSize() / 3f;
     }
 
     /**
@@ -372,7 +423,7 @@ public class TreeVisualizer {
     private static class TreeMouseManager extends DefaultMouseManager {
 
         private MouseEvent last;
-        protected LinkedList<GraphicElement> markedElements;
+        protected LinkedList<Node> markedElements;
 
 
         TreeMouseManager() {
@@ -406,18 +457,26 @@ public class TreeVisualizer {
         @Override
         public void mousePressed(MouseEvent e) {
             last = null;
-
-            if (curElement == null && (!(e.isShiftDown() || e.isControlDown()))) {
-                markedElements.forEach((elem) -> elem.setAttribute("ui.class", "unmarked"));
+            // deselect node
+            if (curElement == null && (!(e.isShiftDown() || e.isControlDown() || SwingUtilities.isRightMouseButton(e)))) {
+                markedElements.forEach(node -> {
+                            node.setAttribute("ui.class", "unmarked");
+                            node.getEdgeSet().forEach(edge -> edge.setAttribute("ui.style", "size: 1px;"));
+                        }
+                );
                 markedElements.clear();
             }
             curElement = view.findNodeOrSpriteAt(e.getX(), e.getY());
+            //select node if not currently dragging and not pressed the right mouse button
             if (curElement != null) {
-                mouseButtonPressOnElement(curElement, e);
+                super.mouseButtonPressOnElement(curElement, e);
                 if (!SwingUtilities.isRightMouseButton(e)) {
                     if (curElement.getAttribute("ui.class").equals("unmarked")) {
+                        Node node = graph.getNode(curElement.getId());
+
                         curElement.setAttribute("ui.class", "marked");
-                        markedElements.add(curElement);
+                        node.getEdgeSet().forEach(edge -> edge.setAttribute("ui.style", "size: 3px;"));
+                        markedElements.add(node);
                     }
                 }
             } else mouseButtonPress(e);
@@ -430,38 +489,40 @@ public class TreeVisualizer {
     /**
      * <p>default values</p><br/>
      *
-     * <p>useTreeLayout = {@value #DEFAULT_USE_TREE_LAYOUT }</p>
+     * <p>enableTreeLayout = {@value #DEFAULT_ENABLE_TREE_LAYOUT }</p>
+     * <p>enableYOffset = {@link #DEFAULT_ENABLE_Y_OFFSET }</p>
      * <p>textSize = {@value #DEFAULT_TEXT_SIZE }</p>
-     * <p>nodeSize = {@value #DEFAULT_NODE_SIZE }</p>
      * <p>color = {@link #DEFAULT_NODE_COLOR }</p>
      * <p>mark = {@link #DEFAULT_MARK_COLOR }</p>
      */
     public static final class Config {
         public int k;
-        public boolean useTreeLayout = DEFAULT_USE_TREE_LAYOUT;
+        public boolean enableTreeLayout = DEFAULT_ENABLE_TREE_LAYOUT;
+        public YOffsetMode enableYOffsetMode = DEFAULT_ENABLE_Y_OFFSET;
         public int textSize = DEFAULT_TEXT_SIZE;
-        public int nodeSize = DEFAULT_NODE_SIZE;
         public Color color = DEFAULT_NODE_COLOR;
         public Color mark = DEFAULT_MARK_COLOR;
 
         /**
          * Config Object for easy initialization of TreeVisualizer Objects
          *
-         * @param k deg+
+         * @param k max deg+
          * @see Config default values
          */
         public Config(int k) {
             this.k = k;
         }
+    }
 
-        /**
-         * @param scale scale for text size and node size
-         * @see Config#Config(int)
-         */
-        public Config(int k, float scale) {
-            this(k);
-            textSize = (int) (DEFAULT_TEXT_SIZE * scale);
-            nodeSize = (int) (DEFAULT_NODE_SIZE * scale);
-        }
+    /**
+     * A y offset helps to read deep trees and trees with many keys
+     * {@link #DEFAULT_ENABLE_Y_OFFSET default value}
+     *
+     * @see TreeVisualizer#autoYOffset on AUTO
+     */
+    public enum YOffsetMode {
+        ON,
+        OFF,
+        AUTO
     }
 }

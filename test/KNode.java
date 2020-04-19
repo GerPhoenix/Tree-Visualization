@@ -11,13 +11,22 @@ import java.util.stream.Collectors;
  * unsorted k tree. Is not following the degree rule. This is just meant to be used to quickly generate trees of random size.
  */
 public class KNode implements VisualizableNode {
+    private final int amountOfKeys;
+    private final int minValue;
+    private final int maxValue;
     List<KNode> children = new LinkedList<>();
     Integer key;
     Color color;
 
     @Override
     public Integer[] getKeys() {
-        return new Integer[]{key};
+        Integer[] keys = new Integer[amountOfKeys];
+        Random random = new Random();
+        keys[0] = key;
+        for (int i = 1; i < amountOfKeys; i++) {
+            keys[i]= random.nextInt(maxValue + 1 - minValue) + minValue;
+        }
+        return keys;
     }
 
     @Override
@@ -29,19 +38,23 @@ public class KNode implements VisualizableNode {
     /**
      * Creates an unsorted tree. Is not following the degree rule. This is just meant to be used to quickly generate Trees of random size.
      *
-     * @param k                    dge+
-     * @param amountOfRandomValues amount of random values that should be inserted in the tree
-     * @param minValue             Minimum value of the random values
-     * @param maxValue             Maximum values of the ranom values
-     * @param values               Fixed values that should be inserted in the tree
+     * @param k             dge+
+     * @param amountOfKeys  amount of keys each node should have. Out of simplicity, just uses the same value multiple times
+     * @param amountOfNodes amount of random values that should be inserted in the tree
+     * @param minValue      Minimum value of the random values
+     * @param maxValue      Maximum value of the random values
+     * @param values        Fixed values that should be inserted in the tree
      */
-    KNode(int k, int amountOfRandomValues, int minValue, int maxValue, Integer... values) {
+    KNode(int k, int amountOfKeys, int amountOfNodes, int minValue, int maxValue, Integer... values) {
+        this.amountOfKeys = amountOfKeys;
+        this.minValue = minValue;
+        this.maxValue = maxValue;
         if (minValue > maxValue)
             throw new IllegalArgumentException(minValue + " > " + maxValue);
         List<Integer> valueList = Arrays.stream(values).collect(Collectors.toList());
         Random random = new Random();
-        for (int i = 0; i < amountOfRandomValues; i++) {
-            valueList.add(random.nextInt(maxValue-minValue) + minValue);
+        for (int i = 0; i < amountOfNodes; i++) {
+            valueList.add(random.nextInt(maxValue + 1 - minValue) + minValue);
         }
         values = valueList.toArray(new Integer[0]);
         this.key = values[0];
@@ -53,11 +66,11 @@ public class KNode implements VisualizableNode {
                 if (i < rest) {
                     Integer[] newValues = Arrays.copyOfRange(values, rangeLength * i + i, rangeLength * (i + 1) + i + 1);
                     if (newValues.length != 0)
-                        children.add(new KNode(k, 0, 0, 0, newValues));
+                        children.add(new KNode(k, amountOfKeys,0, 0, 0, newValues));
                 } else {
                     Integer[] newValues = Arrays.copyOfRange(values, rangeLength * i + rest, rangeLength * (i + 1) + rest);
                     if (newValues.length != 0)
-                        children.add(new KNode(k, 0, 0, 0, newValues));
+                        children.add(new KNode(k, amountOfKeys,0, 0, 0, newValues));
                 }
             }
         }
