@@ -202,7 +202,7 @@ public class TreeVisualizer {
      * Default graph setup
      */
     private void graphSetup() {
-        if(firstVisualization) {
+        if(firstVisualization||viewer.getDefaultView()==null) {
             viewSetup();
             firstVisualization = false;
         }
@@ -242,7 +242,6 @@ public class TreeVisualizer {
                         viewPanel.getCamera().setViewPercent(0.35);
                 else
                     viewPanel.getCamera().setViewPercent(0.45);
-
             if (multipleKeys) {
                 // if any node has more then 1 value set shape of all nodes to "box"
                 CssGenerator generalCss = new CssGenerator("node");
