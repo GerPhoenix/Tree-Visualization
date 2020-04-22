@@ -50,6 +50,7 @@ public class TreeVisualizer {
     // flag stating if a node containing multiple keys was found while drawing. Is set to false upon reset.
     private boolean multipleKeys;
     private int nodeAmount;
+    private boolean firstVisualization = true;
 
     /**
      * Calls {@link TreeVisualizer#TreeVisualizer(int, boolean, YOffsetMode, int, Color, Color)} with provided k and the {@link Config default values}
@@ -92,7 +93,6 @@ public class TreeVisualizer {
         this.k = k;
         this.useTreeLayout = enableTreeLayout;
         graph = new GraphicGraph("Tree");
-        viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
 
         // BUILD CSS
         generalStyle = new CssGenerator("node");
@@ -114,10 +114,13 @@ public class TreeVisualizer {
         markedStyle.set("fill-color", CssGenerator.rgbString(mark));
         markedStyle.set("stroke-width", "2");
         markedStyle.set("z-index", "1000");
+    }
 
-        // SETUP GRAPH
-        graphSetup();
-
+    /**
+     * One time call on first draw call
+     */
+    private void viewSetup() {
+        viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
         // SETUP MOUSE LISTENERS
         ViewPanel view_panel_frame = viewer.addDefaultView(true);
         viewPanel = viewer.getDefaultView();
@@ -187,10 +190,10 @@ public class TreeVisualizer {
      * reset the graph and perform a default setup
      */
     private void reset() {
-        viewer.getDefaultView().setVisible(false);
         graph.clear();
         multipleKeys = false;
         graphSetup();
+        viewer.getDefaultView().setVisible(false);
 
     }
 
@@ -198,9 +201,10 @@ public class TreeVisualizer {
      * Default graph setup
      */
     private void graphSetup() {
-//        disable Logger so warnings that seems to have no effect won't be shown#
-//        Logger.getLogger(GraphicGraph.class.getSimpleName()).setLevel(Level.OFF);
-//        Logger.getLogger(LayoutRunner.class.getSimpleName()).setLevel(Level.OFF);
+        if(firstVisualization) {
+            viewSetup();
+            firstVisualization = false;
+        }
         if (useTreeLayout)
             viewer.disableAutoLayout();
         else
