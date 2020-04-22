@@ -218,38 +218,46 @@ public class TreeVisualizer {
      * @param root of a tree or subtree
      */
     public void draw(VisualizableNode root) {
-        if(root == null) {
-            return;
-        }
         // clear graph
         reset();
-        int height = getHeightCountNodesAndCheckForMultipleKeys(root);
+        if(root == null) {
+            CssGenerator noNodeCss = new CssGenerator("node");
+            noNodeCss.set("stroke-mode", "none");
+            noNodeCss.set("fill-color", CssGenerator.rgbString(Color.white));
+            noNodeCss.set("shadow-mode", "none");
+            graph.setAttribute("ui.stylesheet", graph.getAttribute("ui.stylesheet") + noNodeCss.toString());
+            Node emptyMessageNode = graph.addNode("0");
+            emptyMessageNode.addAttribute("ui.label", "EMPTY");
+            emptyMessageNode.addAttribute("ui.class", "marked");
+        } else {
+            int height = getHeightCountNodesAndCheckForMultipleKeys(root);
 
-        // Zoom in because the view my lag if to many nodes are visible at the same time
-        if (nodeAmount > 300)
-            if (nodeAmount > 500)
-                if (nodeAmount > 700)
-                    viewPanel.getCamera().setViewPercent(0.3);
+            // Zoom in because the view my lag if to many nodes are visible at the same time
+            if (nodeAmount > 300)
+                if (nodeAmount > 500)
+                    if (nodeAmount > 700)
+                        viewPanel.getCamera().setViewPercent(0.3);
+                    else
+                        viewPanel.getCamera().setViewPercent(0.35);
                 else
-                    viewPanel.getCamera().setViewPercent(0.35);
-            else
-                viewPanel.getCamera().setViewPercent(0.45);
+                    viewPanel.getCamera().setViewPercent(0.45);
 
-        if (multipleKeys) {
-            // if any node has more then 1 value set shape of all nodes to "box"
-            CssGenerator generalCss = new CssGenerator("node");
-            generalCss.set("shape", "rounded-box");
-            graph.setAttribute("ui.stylesheet", graph.getAttribute("ui.stylesheet") + generalCss.toString());
+            if (multipleKeys) {
+                // if any node has more then 1 value set shape of all nodes to "box"
+                CssGenerator generalCss = new CssGenerator("node");
+                generalCss.set("shape", "rounded-box");
+                graph.setAttribute("ui.stylesheet", graph.getAttribute("ui.stylesheet") + generalCss.toString());
+            }
+            // draw root, using it's hashcode as id
+            Node graphRoot = graph.addNode(String.valueOf(root.hashCode()));
+            // Stringify key so it can be displayed
+            String[] rootKeyStrings = getKeys(root);
+            configureNode(graphRoot, rootKeyStrings, root.getColor());
+            if (useTreeLayout)
+                graphRoot.setAttribute("xyz", 0.0, 0.0, 0.0);
+            // traverse tree recursive drawing all nodes
+            addNodesRecursive(root, 1, height);
         }
-        // draw root, using it's hashcode as id
-        Node graphRoot = graph.addNode(String.valueOf(root.hashCode()));
-        // Stringify key so it can be displayed
-        String[] rootKeyStrings = getKeys(root);
-        configureNode(graphRoot, rootKeyStrings, root.getColor());
-        if (useTreeLayout)
-            graphRoot.setAttribute("xyz", 0.0, 0.0, 0.0);
-        // traverse tree recursive drawing all nodes
-        addNodesRecursive(root, 1, height);
         viewer.getDefaultView().setVisible(true);
     }
 
