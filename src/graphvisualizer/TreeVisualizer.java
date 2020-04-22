@@ -121,6 +121,7 @@ public class TreeVisualizer {
      */
     private void viewSetup() {
         viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+        viewer.setCloseFramePolicy(Viewer.CloseFramePolicy.CLOSE_VIEWER);
         // SETUP MOUSE LISTENERS
         ViewPanel view_panel_frame = viewer.addDefaultView(true);
         viewPanel = viewer.getDefaultView();
