@@ -15,6 +15,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.Objects;
 
 /**
  * Used to visualize tree structures implementing {@link VisualizableNode} interface for their Nodes.
@@ -261,7 +262,7 @@ public class TreeVisualizer {
     private void addNodesRecursive(VisualizableNode parentNode, int currentDepth, int maxDepth) {
         Node graphNode = graph.getNode(String.valueOf(parentNode.hashCode()));
         Object[] parentXYZ = graphNode.getAttribute("xyz");
-        VisualizableNode[] children = parentNode.getChildren();
+        VisualizableNode[] children = filterNullChildren(parentNode.getChildren());
         //draws all children and edges to them. Recursively traverse children subtrees
         for (int i = 0; i < children.length; i++) {
             VisualizableNode child = children[i];
@@ -280,8 +281,6 @@ public class TreeVisualizer {
             // traverse child subtree
             addNodesRecursive(child, currentDepth + 1, maxDepth);
         }
-
-
     }
 
     /**
@@ -341,7 +340,7 @@ public class TreeVisualizer {
 
     private int getHeightCountNodesAndCheckForMultipleKeys(VisualizableNode visualizableNode) {
         nodeAmount++;
-        return Arrays.stream(visualizableNode.getChildren())
+        return Arrays.stream(filterNullChildren(visualizableNode.getChildren()))
                 .mapToInt((node) -> {
                             if (node.getKeys().length > 1)
                                 multipleKeys = true;
@@ -349,6 +348,10 @@ public class TreeVisualizer {
                         }
                 )
                 .max().orElse(0) + 1;
+    }
+
+    private VisualizableNode[] filterNullChildren(VisualizableNode[] children) {
+        return Arrays.stream(children).filter(Objects::nonNull).toArray(VisualizableNode[]::new);
     }
 
     /**
