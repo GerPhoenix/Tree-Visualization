@@ -218,6 +218,9 @@ public class TreeVisualizer {
      * @param root of a tree or subtree
      */
     public void draw(VisualizableNode root) {
+        if(root == null) {
+            return;
+        }
         // clear graph
         reset();
         int height = getHeightCountNodesAndCheckForMultipleKeys(root);
