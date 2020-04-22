@@ -86,12 +86,12 @@ public class TreeVisualizer {
      * @see Config default values
      */
     public TreeVisualizer(int k, boolean enableTreeLayout, YOffsetMode enableYOffsetMode, int textSize, Color color, Color mark) {
-        this.enableYOffsetMode = enableYOffsetMode;
         // SELECT RENDERER
         System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
         // INITIALIZE ATTRIBUTES
         this.k = k;
         this.useTreeLayout = enableTreeLayout;
+        this.enableYOffsetMode = enableYOffsetMode;
         graph = new GraphicGraph("Tree");
 
         // BUILD CSS
@@ -123,15 +123,14 @@ public class TreeVisualizer {
         viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
         viewer.setCloseFramePolicy(Viewer.CloseFramePolicy.CLOSE_VIEWER);
         // SETUP MOUSE LISTENERS
-        ViewPanel view_panel_frame = viewer.addDefaultView(true);
-        viewPanel = viewer.getDefaultView();
+        viewPanel = viewer.addDefaultView(true);
         // remove GraphStream default MouseListener
-        view_panel_frame.removeMouseListener(view_panel_frame.getMouseListeners()[0]);
+        viewPanel.removeMouseListener(viewPanel.getMouseListeners()[0]);
         // Assign our own Mouse Listener which is making some changes to the GraphStream default MouseListener
         TreeMouseManager mouseManager = new TreeMouseManager();
         mouseManager.init(graph, viewPanel);
         //add a mouse wheel listener to the ViewPanel for zooming the graph
-        view_panel_frame.addMouseWheelListener(e -> TreeVisualizer.zoomGraphMouseWheelMoved(e, viewPanel));
+        viewPanel.addMouseWheelListener(e -> TreeVisualizer.zoomGraphMouseWheelMoved(e, viewPanel));
     }
 
     public int getK() {
@@ -202,7 +201,7 @@ public class TreeVisualizer {
      * Default graph setup
      */
     private void graphSetup() {
-        if(firstVisualization||viewer.getDefaultView()==null) {
+        if (firstVisualization || viewer.getDefaultView() == null) {
             viewSetup();
             firstVisualization = false;
         }
@@ -212,7 +211,6 @@ public class TreeVisualizer {
             viewer.enableAutoLayout();
         graph.setAttribute("ui.stylesheet", generalStyle.toString() + markedStyle.toString());
     }
-
     /**
      * draws a new tree growing from the provided root Node
      *
@@ -221,7 +219,7 @@ public class TreeVisualizer {
     public void draw(VisualizableNode root) {
         // clear graph
         reset();
-        if(root == null) {
+        if (root == null) {
             CssGenerator noNodeCss = new CssGenerator("node");
             noNodeCss.set("stroke-mode", "none");
             noNodeCss.set("fill-color", CssGenerator.rgbString(Color.white));
