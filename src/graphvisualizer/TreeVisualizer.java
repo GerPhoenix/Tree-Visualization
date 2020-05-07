@@ -32,7 +32,7 @@ public class TreeVisualizer {
     public static final int DEFAULT_NODE_SIZE = DEFAULT_TEXT_SIZE * 2;
     public static final TreeLayout DEFAULT_LAYOUT = TreeLayout.TREE;
     public static final boolean DEFAULT_AUTOMATIC_NODE_SCALING_MODE = true;
-    public static final YOffsetMode DEFAULT_ENABLE_Y_OFFSET = YOffsetMode.AUTO;
+    public static final YOffsetMode DEFAULT_Y_OFFSET_MODE = YOffsetMode.AUTO;
     public static final Color DEFAULT_NODE_COLOR = Color.white;
     public static final Color DEFAULT_MARK_COLOR = Color.white;
 
@@ -41,7 +41,7 @@ public class TreeVisualizer {
 
     private int k;
     private TreeLayout layout;
-    private YOffsetMode enableYOffsetMode;
+    private YOffsetMode yOffsetMode;
     private boolean automaticNodeScalingMode;
     private int nodeSize;
 
@@ -63,7 +63,7 @@ public class TreeVisualizer {
      * @see Config default values
      */
     public TreeVisualizer(int k) {
-        this(k, DEFAULT_LAYOUT, DEFAULT_ENABLE_Y_OFFSET, DEFAULT_TEXT_SIZE, DEFAULT_NODE_COLOR, DEFAULT_MARK_COLOR, DEFAULT_AUTOMATIC_NODE_SCALING_MODE, DEFAULT_NODE_SIZE);
+        this(k, DEFAULT_LAYOUT, DEFAULT_Y_OFFSET_MODE, DEFAULT_TEXT_SIZE, DEFAULT_NODE_COLOR, DEFAULT_MARK_COLOR, DEFAULT_AUTOMATIC_NODE_SCALING_MODE, DEFAULT_NODE_SIZE);
     }
 
     /**
@@ -73,7 +73,7 @@ public class TreeVisualizer {
      * @see Config default values
      */
     public TreeVisualizer(Config config) {
-        this(config.k, config.layout, config.enableYOffsetMode, config.textSize, config.color, config.mark, config.automaticNodeScalingMode, config.nodeSize);
+        this(config.k, config.layout, config.yOffsetMode, config.textSize, config.color, config.mark, config.automaticNodeScalingMode, config.nodeSize);
     }
 
 
@@ -82,16 +82,15 @@ public class TreeVisualizer {
      *
      * @param k                        max deg+, the maximum amount of children that nodes in the tree posses
      * @param Layout                   {@link TreeLayout TreeLayout} How the tree shall be drawn when the the tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
-     * @param enableYOffsetMode        {@link YOffsetMode YOffsetMode} if an alternating y offset should be applied to neighbouring children when the tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
+     * @param yOffsetMode              {@link YOffsetMode YOffsetMode} if an alternating y offset should be applied to neighbouring children when the tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
      * @param textSize                 size of value letters when tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
      * @param color                    color of the nodes when tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
      * @param mark                     color of the nodes when tree is {@link TreeVisualizer#draw(VisualizableNode) displayed} and the node is marked (left click on node).
      * @param automaticNodeScalingMode if the node size should scale automatically to the size of its content when tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
      * @param nodeSize                 the node size that shall be applied if automaticNodeScalingMode is false else value is written but has no effect until automaticNodeScalingMode is turned off.
      * @see Config default values
-     * @see TreeVisualizer#draw(VisualizableNode) displayed
      */
-    public TreeVisualizer(int k, TreeLayout Layout, YOffsetMode enableYOffsetMode, int textSize, Color color, Color mark, boolean automaticNodeScalingMode, int nodeSize) {
+    public TreeVisualizer(int k, TreeLayout Layout, YOffsetMode yOffsetMode, int textSize, Color color, Color mark, boolean automaticNodeScalingMode, int nodeSize) {
         // SELECT RENDERER
         System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
         // INITIALIZE ATTRIBUTES
@@ -99,7 +98,7 @@ public class TreeVisualizer {
         this.automaticNodeScalingMode = automaticNodeScalingMode;
         this.nodeSize = nodeSize;
         this.layout = Layout;
-        this.enableYOffsetMode = enableYOffsetMode;
+        this.yOffsetMode = yOffsetMode;
         graph = new GraphicGraph("Tree");
 
         // BUILD CSS
@@ -157,20 +156,24 @@ public class TreeVisualizer {
         generalStyle.set("text-size", String.valueOf(textSize));
     }
 
+    public void scale(float textScale) {
+        setTextSize((int) (getTextSize() * textScale));
+    }
+
     public TreeLayout getLayout() {
         return layout;
     }
 
-    public void enableTreeLayout(YOffsetMode enableYOffsetMode) {
-        this.enableYOffsetMode = enableYOffsetMode;
+    public void setTreeLayout(YOffsetMode yOffsetMode) {
+        this.yOffsetMode = yOffsetMode;
     }
 
-    public YOffsetMode isEnableYOffsetMode() {
-        return enableYOffsetMode;
+    public YOffsetMode getYOffsetMode() {
+        return yOffsetMode;
     }
 
-    public void setEnableYOffsetMode(YOffsetMode enableYOffsetMode) {
-        this.enableYOffsetMode = enableYOffsetMode;
+    public void setYOffsetMode(YOffsetMode yOffsetMode) {
+        this.yOffsetMode = yOffsetMode;
     }
 
     public String getNodeColor() {
@@ -181,7 +184,6 @@ public class TreeVisualizer {
         generalStyle.set("fill-color", CssGenerator.rgbString(color));
     }
 
-
     public String getMarkColor() {
         return markedStyle.get("fill-color");
     }
@@ -190,8 +192,20 @@ public class TreeVisualizer {
         markedStyle.set("fill-color", CssGenerator.rgbString(color));
     }
 
-    public void scale(float textScale) {
-        setTextSize((int) (getTextSize() * textScale));
+    public boolean isAutomaticNodeScalingMode() {
+        return automaticNodeScalingMode;
+    }
+
+    public void setAutomaticNodeScalingMode(boolean automaticNodeScalingMode) {
+        this.automaticNodeScalingMode = automaticNodeScalingMode;
+    }
+
+    public int getNodeSize() {
+        return nodeSize;
+    }
+
+    public void setNodeSize(int nodeSize) {
+        this.nodeSize = nodeSize;
     }
 
     /**
@@ -343,15 +357,15 @@ public class TreeVisualizer {
      * @return child node y position
      */
     private double calculateNodeYPosition(double parentY, int childIndex, boolean multipleKeys, int currentDepth, int maxDepth) {
-        double y = 0.0;
+        double y;
         if (layout == TreeLayout.TREE)
             y = parentY - Y;
         else
             y = parentY + Y;
 
-        if (enableYOffsetMode == YOffsetMode.ON)
+        if (yOffsetMode == YOffsetMode.ON)
             y += childIndex * 1.25 * (getTextSize() + getHeightPadding()) * ((currentDepth % 2) * 2 + -1);
-        else if (enableYOffsetMode == YOffsetMode.AUTO)
+        else if (yOffsetMode == YOffsetMode.AUTO)
             y += autoYOffset(k, multipleKeys, maxDepth) ? childIndex * 1.25 * (getTextSize() + getHeightPadding()) * ((currentDepth % 2) * 2 + -1) : 0;
         return y;
     }
@@ -549,16 +563,17 @@ public class TreeVisualizer {
      * <p>default values</p><br/>
      *
      * <p>layout = {@link #DEFAULT_LAYOUT}</p>
-     * <p>enableYOffset = {@link #DEFAULT_ENABLE_Y_OFFSET }</p>
+     * <p>yOffsetMode = {@link #DEFAULT_Y_OFFSET_MODE }</p>
      * <p>textSize = {@value #DEFAULT_TEXT_SIZE }</p>
-     * <p>nodeSize = {@value #DEFAULT_NODE_SIZE }</p>
      * <p>color = {@link #DEFAULT_NODE_COLOR }</p>
      * <p>mark = {@link #DEFAULT_MARK_COLOR }</p>
+     * <p>automaticNodeScalingMode = {@value #DEFAULT_AUTOMATIC_NODE_SCALING_MODE }</p>
+     * <p>nodeSize = {@value #DEFAULT_NODE_SIZE }</p>
      */
     public static final class Config {
         public int k;
         public TreeLayout layout = DEFAULT_LAYOUT;
-        public YOffsetMode enableYOffsetMode = DEFAULT_ENABLE_Y_OFFSET;
+        public YOffsetMode yOffsetMode = DEFAULT_Y_OFFSET_MODE;
         public boolean automaticNodeScalingMode = DEFAULT_AUTOMATIC_NODE_SCALING_MODE;
         public int textSize = DEFAULT_TEXT_SIZE;
         public int nodeSize = DEFAULT_NODE_SIZE;
@@ -578,7 +593,7 @@ public class TreeVisualizer {
 
     /**
      * A y offset helps to read deep trees and trees with many keys<br>
-     * {@link #DEFAULT_ENABLE_Y_OFFSET default value}
+     * {@link #DEFAULT_Y_OFFSET_MODE default value}
      *
      * @see TreeVisualizer#autoYOffset on AUTO
      */
