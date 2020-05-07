@@ -22,14 +22,16 @@ import java.util.Objects;
  * <p>
  * How to use:<br>
  * <code>new {@link #TreeVisualizer(int)}.{@link #draw(VisualizableNode)};</code><br>
- * There are also other {@link #TreeVisualizer(int, boolean, YOffsetMode, int, Color, Color) constructors} available to do more advanced things.
+ * There are also other {@link TreeVisualizer#TreeVisualizer(int, TreeLayout, YOffsetMode, int, Color, Color, boolean, int) constructors} available to do more advanced things.
  *
  * @see <a href="http://graphstream-project.org/" Uses Graphstream gs-core and gs-ui for visualization of the tree graph</a>
  */
 public class TreeVisualizer {
 
     public static final int DEFAULT_TEXT_SIZE = 14;
+    public static final int DEFAULT_NODE_SIZE = DEFAULT_TEXT_SIZE * 2;
     public static final TreeLayout DEFAULT_LAYOUT = TreeLayout.TREE;
+    public static final boolean DEFAULT_AUTOMATIC_NODE_SCALING_MODE = true;
     public static final YOffsetMode DEFAULT_ENABLE_Y_OFFSET = YOffsetMode.AUTO;
     public static final Color DEFAULT_NODE_COLOR = Color.white;
     public static final Color DEFAULT_MARK_COLOR = Color.white;
@@ -40,8 +42,8 @@ public class TreeVisualizer {
     private int k;
     private TreeLayout layout;
     private YOffsetMode enableYOffsetMode;
-    private boolean fixedNodeSize;
-	private int nodeSize;
+    private boolean automaticNodeScalingMode;
+    private int nodeSize;
 
     private GraphicGraph graph;
     private Viewer viewer;
@@ -55,44 +57,46 @@ public class TreeVisualizer {
     private boolean firstVisualization = true;
 
     /**
-     * Calls {@link TreeVisualizer#TreeVisualizer(int, TreeLayout, YOffsetMode, int, Color, Color)} with provided k and the {@link Config default values}
+     * Calls {@link TreeVisualizer#TreeVisualizer(int, TreeLayout, YOffsetMode, int, Color, Color, boolean, int) constructor} with provided k and the {@link Config default values}
      *
      * @param k max deg+
      * @see Config default values
      */
     public TreeVisualizer(int k) {
-        this(k, DEFAULT_LAYOUT, DEFAULT_ENABLE_Y_OFFSET, DEFAULT_TEXT_SIZE, DEFAULT_NODE_COLOR, DEFAULT_MARK_COLOR, false, 0);
+        this(k, DEFAULT_LAYOUT, DEFAULT_ENABLE_Y_OFFSET, DEFAULT_TEXT_SIZE, DEFAULT_NODE_COLOR, DEFAULT_MARK_COLOR, DEFAULT_AUTOMATIC_NODE_SCALING_MODE, DEFAULT_NODE_SIZE);
     }
 
     /**
-     * Calls {@link TreeVisualizer#TreeVisualizer(int, boolean, YOffsetMode, int, Color, Color)} with using arguments provided in the {@link Config} parameter
+     * Calls {@link TreeVisualizer#TreeVisualizer(int, TreeLayout, YOffsetMode, int, Color, Color, boolean, int) constructor} with using arguments provided in the {@link Config} parameter
      *
      * @param config {@link Config} initialize TreeVisualizer with provided Attributes.
      * @see Config default values
      */
     public TreeVisualizer(Config config) {
-        this(config.k, config.layout, config.enableYOffsetMode, config.textSize, config.color, config.mark, config.fixedNodeSize, config.nodeSize);
+        this(config.k, config.layout, config.enableYOffsetMode, config.textSize, config.color, config.mark, config.automaticNodeScalingMode, config.nodeSize);
     }
 
 
     /**
      * Creates a new TreeVisualizer with provided settings. All settings can be changes afterwards using their setters.
      *
-     * @param k                 max deg+
-     * @param enableTreeLayout  if the Tree View shall be applied when the tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
-     *                          Else use GraphStream <a href="http://graphstream-project.org/doc/Tutorials/Graph-Visualisation/1.0/#automatic-layout">automatic layout</a>.
-     * @param enableYOffsetMode {@link YOffsetMode YOffsetMode} if an alternating y offset should be applied to neighbouring children when the tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
-     * @param textSize          size of value letters when tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
-     * @param color             color of the nodes when tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
-     * @param mark              color of the nodes when tree is {@link TreeVisualizer#draw(VisualizableNode) displayed} and the node is marked (left click on node).
+     * @param k                        max deg+, the maximum amount of children that nodes in the tree posses
+     * @param Layout                   {@link TreeLayout TreeLayout} How the tree shall be drawn when the the tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
+     * @param enableYOffsetMode        {@link YOffsetMode YOffsetMode} if an alternating y offset should be applied to neighbouring children when the tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
+     * @param textSize                 size of value letters when tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
+     * @param color                    color of the nodes when tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
+     * @param mark                     color of the nodes when tree is {@link TreeVisualizer#draw(VisualizableNode) displayed} and the node is marked (left click on node).
+     * @param automaticNodeScalingMode if the node size should scale automatically to the size of its content when tree is {@link TreeVisualizer#draw(VisualizableNode) displayed}.
+     * @param nodeSize                 the node size that shall be applied if automaticNodeScalingMode is false else value is written but has no effect until automaticNodeScalingMode is turned off.
      * @see Config default values
+     * @see TreeVisualizer#draw(VisualizableNode) displayed
      */
-    public TreeVisualizer(int k, TreeLayout Layout, YOffsetMode enableYOffsetMode, int textSize, Color color, Color mark, boolean fixedNodeSize, int nodeSize) {
+    public TreeVisualizer(int k, TreeLayout Layout, YOffsetMode enableYOffsetMode, int textSize, Color color, Color mark, boolean automaticNodeScalingMode, int nodeSize) {
         // SELECT RENDERER
         System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
         // INITIALIZE ATTRIBUTES
         this.k = k;
-        this.fixedNodeSize = fixedNodeSize;
+        this.automaticNodeScalingMode = automaticNodeScalingMode;
         this.nodeSize = nodeSize;
         this.layout = Layout;
         this.enableYOffsetMode = enableYOffsetMode;
@@ -215,6 +219,7 @@ public class TreeVisualizer {
             viewer.enableAutoLayout();
         graph.setAttribute("ui.stylesheet", generalStyle.toString() + markedStyle.toString());
     }
+
     /**
      * draws a new tree growing from the provided root Node
      *
@@ -254,10 +259,10 @@ public class TreeVisualizer {
             Node graphRoot = graph.addNode(String.valueOf(root.hashCode()));
             // Stringify key so it can be displayed
             String[] rootKeyStrings = getKeys(root);
-            if (fixedNodeSize)
-            	configureNode(graphRoot, rootKeyStrings, root.getColor(), nodeSize);
+            if (automaticNodeScalingMode)
+                configureNode(graphRoot, rootKeyStrings, root.getColor());
             else
-            	configureNode(graphRoot, rootKeyStrings, root.getColor());
+                configureNode(graphRoot, rootKeyStrings, root.getColor(), nodeSize);
             if (layout != TreeLayout.STANDARD_GRAPH)
                 graphRoot.setAttribute("xyz", 0.0, 0.0, 0.0);
             // traverse tree recursive drawing all nodes
@@ -288,7 +293,7 @@ public class TreeVisualizer {
             VisualizableNode child = children[i];
             // draw child, using it's hashcode as id
             Node childGraphNode = graph.addNode(String.valueOf(child.hashCode()));
-        	if (layout != TreeLayout.STANDARD_GRAPH) {
+            if (layout != TreeLayout.STANDARD_GRAPH) {
                 // calculate custom node position
                 double x = calculateNodeXPosition((double) parentXYZ[0], i, children.length, currentDepth, maxDepth);
                 double y = calculateNodeYPosition((double) parentXYZ[1], i, multipleKeys, currentDepth, maxDepth);
@@ -297,10 +302,11 @@ public class TreeVisualizer {
             drawEdge(graphNode, childGraphNode);
             // Stringify key so it can be displayed
             String[] childKeyStrings = getKeys(child);
-            if (fixedNodeSize)
-            	configureNode(childGraphNode, childKeyStrings, child.getColor(), nodeSize);
-            else 
-            	configureNode(childGraphNode, childKeyStrings, child.getColor());
+            if (automaticNodeScalingMode)
+                configureNode(childGraphNode, childKeyStrings, child.getColor());
+            else
+                configureNode(childGraphNode, childKeyStrings, child.getColor(), nodeSize);
+
             // traverse child subtree
             addNodesRecursive(child, currentDepth + 1, maxDepth);
         }
@@ -338,11 +344,11 @@ public class TreeVisualizer {
      */
     private double calculateNodeYPosition(double parentY, int childIndex, boolean multipleKeys, int currentDepth, int maxDepth) {
         double y = 0.0;
-    	if (layout == TreeLayout.TREE)
-        	y = parentY - Y;
+        if (layout == TreeLayout.TREE)
+            y = parentY - Y;
         else
-        	y = parentY + Y;
-        
+            y = parentY + Y;
+
         if (enableYOffsetMode == YOffsetMode.ON)
             y += childIndex * 1.25 * (getTextSize() + getHeightPadding()) * ((currentDepth % 2) * 2 + -1);
         else if (enableYOffsetMode == YOffsetMode.AUTO)
@@ -409,14 +415,12 @@ public class TreeVisualizer {
         graph.setAttribute("ui.stylesheet", graph.getAttribute("ui.stylesheet") + nodeCss.toString());
 
     }
-    
+
     /**
      * Configure the provided node
      *
      * @param node  node to be configured
      * @param keys  in string form to be assigned as graph node label
-     * @param width  width of node
-     * @param height  height of node
      * @param color color of the node if one was provided by {@link VisualizableNode#getColor()}
      */
     private void configureNode(Node node, String[] keys, Color color, int nodeSize) {
@@ -428,9 +432,8 @@ public class TreeVisualizer {
         if (color != null) {
             nodeCss.set("fill-color", CssGenerator.rgbString(color));
         }
-        int nodeWidth = nodeSize;
-        int nodeHeight = nodeSize;
-        nodeCss.set("size", (nodeWidth) + "px, " + nodeHeight + "px");
+
+        nodeCss.set("size", nodeSize + "px, " + nodeSize + "px");
         graph.setAttribute("ui.stylesheet", graph.getAttribute("ui.stylesheet") + nodeCss.toString());
 
     }
@@ -545,9 +548,10 @@ public class TreeVisualizer {
     /**
      * <p>default values</p><br/>
      *
-     * <p>enableTreeLayout = {@value #DEFAULT_ENABLE_TREE_LAYOUT }</p>
+     * <p>layout = {@link #DEFAULT_LAYOUT}</p>
      * <p>enableYOffset = {@link #DEFAULT_ENABLE_Y_OFFSET }</p>
      * <p>textSize = {@value #DEFAULT_TEXT_SIZE }</p>
+     * <p>nodeSize = {@value #DEFAULT_NODE_SIZE }</p>
      * <p>color = {@link #DEFAULT_NODE_COLOR }</p>
      * <p>mark = {@link #DEFAULT_MARK_COLOR }</p>
      */
@@ -555,55 +559,25 @@ public class TreeVisualizer {
         public int k;
         public TreeLayout layout = DEFAULT_LAYOUT;
         public YOffsetMode enableYOffsetMode = DEFAULT_ENABLE_Y_OFFSET;
+        public boolean automaticNodeScalingMode = DEFAULT_AUTOMATIC_NODE_SCALING_MODE;
         public int textSize = DEFAULT_TEXT_SIZE;
+        public int nodeSize = DEFAULT_NODE_SIZE;
         public Color color = DEFAULT_NODE_COLOR;
         public Color mark = DEFAULT_MARK_COLOR;
-        public boolean fixedNodeSize = false;
-        public int nodeSize;
-        
+
         /**
          * Config Object for easy initialization of TreeVisualizer Objects
          *
          * @param k max deg+
-         * @param layout used TreeLayout
          * @see Config default values
          */
-        public Config(int k, TreeLayout layout) {
+        public Config(int k) {
             this.k = k;
-            this.layout = layout;
-        }
-        
-        /**
-         * Config Object for easy initialization of TreeVisualizer Objects
-         *
-         * @param k max deg+
-         * @param layout used TreeLayout
-         * @param nodeSize used size for nodes
-         * @see Config default values
-         */
-        public Config(int k, TreeLayout layout, int nodeSize) {
-            this.k = k;
-            this.layout = layout;
-            this.fixedNodeSize = true;
-            this.nodeSize = nodeSize;
-        }
-        
-        /**
-         * Config Object for easy initialization of TreeVisualizer Objects
-         *
-         * @param k max deg+
-         * @param nodeSize used size for nodes
-         * @see Config default values
-         */
-        public Config(int k, int nodeSize) {
-            this.k = k;
-            this.fixedNodeSize = true;
-            this.nodeSize = nodeSize;
         }
     }
 
     /**
-     * A y offset helps to read deep trees and trees with many keys
+     * A y offset helps to read deep trees and trees with many keys<br>
      * {@link #DEFAULT_ENABLE_Y_OFFSET default value}
      *
      * @see TreeVisualizer#autoYOffset on AUTO
@@ -613,15 +587,15 @@ public class TreeVisualizer {
         OFF,
         AUTO
     }
-    
+
     /**
-     * A layout helps to set the way the tree is drawn
-     * {@link #DEFAULT_LAYOUT default value}
-     *
+     * A layout helps to set the way the tree is drawn<br>
+     * {@link #DEFAULT_LAYOUT default value}<br>
+     * <a href="http://graphstream-project.org/doc/Tutorials/Graph-Visualisation/1.0/#automatic-layout">Graphstream Standard Graph layout</a>.
      */
     public enum TreeLayout {
-    	STANDARD_GRAPH,
-    	TREE,
-    	TREE_INVERTED
+        STANDARD_GRAPH,
+        TREE,
+        TREE_INVERTED
     }
 }
