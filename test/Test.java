@@ -6,13 +6,13 @@ import java.awt.*;
 public class Test {
     private static final int K = 2;
     private static final TreeLayout LAYOUT = TreeLayout.TREE_INVERTED;
-    private static final int NODE_SIZE = 50;
-    private static final boolean AUTOMATIC_NODE_SCALE = false;
     private static final int AMOUNT_OF_KEYS = 1;
     private static final int AMOUNT_OF_NODES = 15;
     private static final int MIN_VALUE = 0;
     private static final int MAX_VALUE = 200;
-    
+    private static final boolean AUTOMATIC_NODE_SCALE = true;
+    private static final int NODE_SIZE = 50;
+
     public static void main(String[] args) {
         TreeVisualizer.Config config = new TreeVisualizer.Config(K);
         config.layout = LAYOUT;

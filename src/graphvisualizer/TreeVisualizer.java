@@ -30,7 +30,7 @@ public class TreeVisualizer {
 
     public static final int DEFAULT_TEXT_SIZE = 14;
     public static final int DEFAULT_NODE_SIZE = DEFAULT_TEXT_SIZE * 2;
-    public static final TreeLayout DEFAULT_LAYOUT = TreeLayout.TREE;
+    public static final TreeLayout DEFAULT_LAYOUT = TreeLayout.TREE_INVERTED;
     public static final boolean DEFAULT_AUTOMATIC_NODE_SCALING_MODE = true;
     public static final YOffsetMode DEFAULT_Y_OFFSET_MODE = YOffsetMode.AUTO;
     public static final Color DEFAULT_NODE_COLOR = Color.white;
