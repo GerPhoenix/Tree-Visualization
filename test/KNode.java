@@ -1,6 +1,6 @@
 import graphvisualizer.VisualizableNode;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,13 +15,13 @@ public class KNode implements VisualizableNode {
     private final int minValue;
     private final int maxValue;
     List<KNode> children = new LinkedList<>();
+    Random random;
     Integer key;
     Color color;
 
     @Override
     public Integer[] getKeys() {
         Integer[] keys = new Integer[amountOfKeys];
-        Random random = new Random();
         keys[0] = key;
         for (int i = 1; i < amountOfKeys; i++) {
             keys[i]= random.nextInt(maxValue + 1 - minValue) + minValue;
@@ -52,7 +52,7 @@ public class KNode implements VisualizableNode {
         if (minValue > maxValue)
             throw new IllegalArgumentException(minValue + " > " + maxValue);
         List<Integer> valueList = Arrays.stream(values).collect(Collectors.toList());
-        Random random = new Random();
+        random = new Random();
         for (int i = 0; i < amountOfNodes; i++) {
             valueList.add(random.nextInt(maxValue + 1 - minValue) + minValue);
         }
@@ -66,11 +66,11 @@ public class KNode implements VisualizableNode {
                 if (i < rest) {
                     Integer[] newValues = Arrays.copyOfRange(values, rangeLength * i + i, rangeLength * (i + 1) + i + 1);
                     if (newValues.length != 0)
-                        children.add(new KNode(k, amountOfKeys,0, 0, 0, newValues));
+                        children.add(new KNode(k, amountOfKeys, 0, minValue, maxValue, newValues));
                 } else {
                     Integer[] newValues = Arrays.copyOfRange(values, rangeLength * i + rest, rangeLength * (i + 1) + rest);
                     if (newValues.length != 0)
-                        children.add(new KNode(k, amountOfKeys,0, 0, 0, newValues));
+                        children.add(new KNode(k, amountOfKeys, 0, minValue, maxValue, newValues));
                 }
             }
         }
