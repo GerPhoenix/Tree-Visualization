@@ -286,7 +286,7 @@ public class TreeVisualizer {
     }
 
     private String[] getKeys(VisualizableNode node) {
-        return Arrays.stream(node.getKeys())
+        return Arrays.stream(node.getKeys()).filter(Objects::nonNull)
                 .map(Object::toString).toArray(String[]::new);
     }
 
