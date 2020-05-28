@@ -17,6 +17,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Objects;
 
+import static java.lang.Thread.sleep;
+
 /**
  * Used to visualize tree structures implementing {@link VisualizableNode} interface for their Nodes.
  * <p>
@@ -52,7 +54,7 @@ public class TreeVisualizer {
     private CssGenerator markedStyle;
 
     // flag stating if a node containing multiple keys was found while drawing. Is set to false upon reset.
-    private boolean multipleKeys;
+    private int keyAmount = 1;
     private int nodeAmount;
     private boolean firstVisualization = true;
 
@@ -213,7 +215,7 @@ public class TreeVisualizer {
      */
     private void reset() {
         graph.clear();
-        multipleKeys = false;
+        keyAmount = 1;
         graphSetup();
         viewer.getDefaultView().setVisible(false);
 
@@ -253,17 +255,7 @@ public class TreeVisualizer {
             emptyMessageNode.addAttribute("ui.class", "marked");
         } else {
             int height = getHeightCountNodesAndCheckForMultipleKeys(root);
-
-            // Zoom in because the view my lag if to many nodes are visible at the same time
-            if (nodeAmount > 300)
-                if (nodeAmount > 500)
-                    if (nodeAmount > 700)
-                        viewPanel.getCamera().setViewPercent(0.3);
-                    else
-                        viewPanel.getCamera().setViewPercent(0.35);
-                else
-                    viewPanel.getCamera().setViewPercent(0.45);
-            if (multipleKeys) {
+            if (keyAmount > 1) {
                 // if any node has more then 1 value set shape of all nodes to "box"
                 CssGenerator generalCss = new CssGenerator("node");
                 generalCss.set("shape", "rounded-box");
@@ -282,7 +274,26 @@ public class TreeVisualizer {
             // traverse tree recursive drawing all nodes
             addNodesRecursive(root, 1, height);
         }
+
         viewer.getDefaultView().setVisible(true);
+        // TODO below is a workaround.
+        //  Required because the zoom is centered on the root node instead of the graph center before the graph is visible.
+        //  We also have to wait some time for the graph to be fully drawn.
+        try {
+            sleep(100);
+        } catch (InterruptedException ignored) {
+        } // Zoom in because the view my lag if to many nodes are visible at the same time
+        if (nodeAmount > 300)
+            if (nodeAmount > 500)
+                if (nodeAmount > 700)
+                    viewPanel.getCamera().setViewPercent(0.3);
+                else
+                    viewPanel.getCamera().setViewPercent(0.35);
+            else
+                viewPanel.getCamera().setViewPercent(0.45);
+        else if (keyAmount > 1)
+            viewPanel.getCamera().setViewPercent(1.0 + 0.025 * keyAmount);
+
     }
 
     private String[] getKeys(VisualizableNode node) {
@@ -310,7 +321,7 @@ public class TreeVisualizer {
             if (layout != TreeLayout.STANDARD_GRAPH) {
                 // calculate custom node position
                 double x = calculateNodeXPosition((double) parentXYZ[0], i, children.length, currentDepth, maxDepth);
-                double y = calculateNodeYPosition((double) parentXYZ[1], i, multipleKeys, currentDepth, maxDepth);
+                double y = calculateNodeYPosition((double) parentXYZ[1], i, keyAmount > 1, currentDepth, maxDepth);
                 childGraphNode.setAttribute("xyz", x, y, 0);
             }
             drawEdge(graphNode, childGraphNode);
@@ -390,8 +401,8 @@ public class TreeVisualizer {
         nodeAmount++;
         return Arrays.stream(filterNullChildren(visualizableNode.getChildren()))
                 .mapToInt((node) -> {
-                            if (node.getKeys().length > 1)
-                                multipleKeys = true;
+                            if (node.getKeys().length > keyAmount)
+                                keyAmount = node.getKeys().length;
                             return getHeightCountNodesAndCheckForMultipleKeys(node);
                         }
                 )
@@ -424,7 +435,7 @@ public class TreeVisualizer {
         float strokeWidth = 2f;
         float widthPaddingWithBorderSize = getTextSize() * delimiterLength / 2f + 2 * strokeWidth;
         float nodeWidth = (Arrays.stream(keys).mapToInt(String::length).sum() + delimiterLength * (keys.length - 1)) * getTextSize() * 0.6f;
-        float nodeHeight = multipleKeys ? getTextSize() + getHeightPadding() : nodeWidth + widthPaddingWithBorderSize;
+        float nodeHeight = keyAmount > 1 ? getTextSize() + getHeightPadding() : nodeWidth + widthPaddingWithBorderSize;
         nodeCss.set("size", (nodeWidth + widthPaddingWithBorderSize) + "px, " + nodeHeight + "px");
         graph.setAttribute("ui.stylesheet", graph.getAttribute("ui.stylesheet") + nodeCss.toString());
 
