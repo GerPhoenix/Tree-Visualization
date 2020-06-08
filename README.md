@@ -13,4 +13,4 @@ Then you can use a [TreeVisualizer](https://github.com/GerPhoenix/Tree-Visualiza
 
 
 ## Update Notice
-TreeVisualizer(int k) has been removed use default constructor instead. 
+TreeVisualizer(int k) has been removed use the TreeVisualizer() initializer without arguments instead. 
