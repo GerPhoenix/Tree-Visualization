@@ -10,3 +10,7 @@ The required files are already in the [lib](https://github.com/GerPhoenix/Tree-V
 ## How to
 Nodes of trees you want to draw have to implement the [VisualizableNode](https://github.com/GerPhoenix/Tree-Visualization/blob/master/src/graphvisualizer/VisualizableNode.java) Interface.
 Then you can use a [TreeVisualizer](https://github.com/GerPhoenix/Tree-Visualization/blob/master/src/graphvisualizer/TreeVisualizer.java) Object to draw your trees using the `TreeVisualizer.draw(VisualizableNode root)` function.
+
+
+## Update Notice
+TreeVisualizer(int k) has been removed use default constructor instead. 

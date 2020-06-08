@@ -3,7 +3,7 @@ Wenn sie einen Baum mit dem TreeVisualizer zeichnen wollen, müssen die Baumknot
 Um den Baum dann zu zeichnen erstellen sie ein TreeVisualizer Objekt. 
 
 # Der Treevisualizer
-Der TreeVisualizer benötigt in seinem simpelsten Initializer zumindest `k`, die maximale Anzahl an Kinderknoten die von einem Knoten im Baum ausgehen können.
+Der TreeVisualizer kann mit seinem Standard Konstruktor initalisiert werden um Bäume mit beliebiger Anzahl an Schlüsseln und Kinderknoten zu visualisieren.
 Komplexere Konstruktoren mit denen zum Beispiel Schriftgröße und Knotenfarbe eingestellt werden können sind auch vorhanden.
 Sehen sie sich das JavaDoc des TreeVisualizers an wenn sie mehr Informationen bezüglich seiner Konstrukoren und deren Parameter erhalten möchten.
 Alle Attribute die über den Konstruktor gesetzt wurden können auch nachträglich über die entsprechenden Getter und Setter gelesen und verändert werden.

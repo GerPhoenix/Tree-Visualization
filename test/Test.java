@@ -14,7 +14,7 @@ public class Test {
     private static final int NODE_SIZE = 50;
 
     public static void main(String[] args) {
-        TreeVisualizer.Config config = new TreeVisualizer.Config(K);
+        TreeVisualizer.Config config = new TreeVisualizer.Config();
         config.layout = LAYOUT;
         config.nodeSize = NODE_SIZE;
         config.automaticNodeScalingMode = AUTOMATIC_NODE_SCALE;
