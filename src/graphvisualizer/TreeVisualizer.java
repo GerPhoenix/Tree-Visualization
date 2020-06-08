@@ -52,7 +52,6 @@ public class TreeVisualizer {
     private CssGenerator generalStyle;
     private CssGenerator markedStyle;
 
-    // flag stating if a node containing multiple keys was found while drawing. Is set to false upon reset.
     private int keyAmount = 1;
     private int nodeAmount;
     private boolean firstVisualization = true;
