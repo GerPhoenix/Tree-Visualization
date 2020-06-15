@@ -10,14 +10,10 @@ import org.graphstream.ui.view.util.DefaultMouseManager;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.InputEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
+import java.awt.event.*;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Objects;
-
-import static java.lang.Thread.sleep;
 
 /**
  * Used to visualize tree structures implementing {@link VisualizableNode} interface for their Nodes.
@@ -135,6 +131,22 @@ public class TreeVisualizer {
         mouseManager.init(graph, viewPanel);
         //add a mouse wheel listener to the ViewPanel for zooming the graph
         viewPanel.addMouseWheelListener(e -> TreeVisualizer.zoomGraphMouseWheelMoved(e, viewPanel));
+        viewPanel.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                // Zoom in because the view may lag if to many nodes are visible at the same time
+                if (nodeAmount > 300)
+                    if (nodeAmount > 500)
+                        if (nodeAmount > 700)
+                            viewPanel.getCamera().setViewPercent(0.3);
+                        else
+                            viewPanel.getCamera().setViewPercent(0.35);
+                    else
+                        viewPanel.getCamera().setViewPercent(0.45);
+                else if (keyAmount > 1)
+                    viewPanel.getCamera().setViewPercent(1.0 + 0.035 * keyAmount);
+            }
+        });
     }
 
     public int getTextSize() {
@@ -263,23 +275,6 @@ public class TreeVisualizer {
         }
 
         viewer.getDefaultView().setVisible(true);
-        // TODO below is a workaround.
-        //  Required because the zoom is centered on the root node instead of the graph center before the graph is visible.
-        //  We also have to wait some time for the graph to be fully drawn.
-        try {
-            sleep(100);
-        } catch (InterruptedException ignored) {
-        } // Zoom in because the view my lag if to many nodes are visible at the same time
-        if (nodeAmount > 300)
-            if (nodeAmount > 500)
-                if (nodeAmount > 700)
-                    viewPanel.getCamera().setViewPercent(0.3);
-                else
-                    viewPanel.getCamera().setViewPercent(0.35);
-            else
-                viewPanel.getCamera().setViewPercent(0.45);
-        else if (keyAmount > 1)
-            viewPanel.getCamera().setViewPercent(1.0 + 0.025 * keyAmount);
 
     }
 
