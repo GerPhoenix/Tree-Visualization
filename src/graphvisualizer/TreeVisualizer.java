@@ -10,7 +10,9 @@ import org.graphstream.ui.view.util.DefaultMouseManager;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.InputEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Objects;
@@ -131,22 +133,6 @@ public class TreeVisualizer {
         mouseManager.init(graph, viewPanel);
         //add a mouse wheel listener to the ViewPanel for zooming the graph
         viewPanel.addMouseWheelListener(e -> TreeVisualizer.zoomGraphMouseWheelMoved(e, viewPanel));
-        viewPanel.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentShown(ComponentEvent e) {
-                // Zoom in because the view may lag if to many nodes are visible at the same time
-                if (nodeAmount > 300)
-                    if (nodeAmount > 500)
-                        if (nodeAmount > 700)
-                            viewPanel.getCamera().setViewPercent(0.3);
-                        else
-                            viewPanel.getCamera().setViewPercent(0.35);
-                    else
-                        viewPanel.getCamera().setViewPercent(0.45);
-                else if (keyAmount > 1)
-                    viewPanel.getCamera().setViewPercent(1.0 + 0.035 * keyAmount);
-            }
-        });
     }
 
     public int getTextSize() {
@@ -271,6 +257,18 @@ public class TreeVisualizer {
             if (layout != TreeLayout.STANDARD_GRAPH)
                 graphRoot.setAttribute("xyz", 0.0, 0.0, 0.0);
             // traverse tree recursive drawing all nodes
+            if (nodeAmount > 300)
+                if (nodeAmount > 500)
+                    if (nodeAmount > 700)
+                        viewPanel.getCamera().setViewPercent(0.3);
+                    else
+                        viewPanel.getCamera().setViewPercent(0.35);
+                else
+                    viewPanel.getCamera().setViewPercent(0.45);
+            else if (keyAmount > 1) {
+                viewPanel.getCamera().setViewPercent(1.0 + 0.04 * keyAmount);
+            }
+
             addNodesRecursive(root, 1, height);
         }
 
@@ -350,15 +348,18 @@ public class TreeVisualizer {
      * @return child node y position
      */
     private double calculateNodeYPosition(double parentY, int childIndex, boolean multipleKeys, int currentDepth, int maxDepth) {
-        double y;
-        if (layout == TreeLayout.TREE)
-            y = parentY - Y;
-        else
-            y = parentY + Y;
+        double y = 0;
         if (yOffsetMode == YOffsetMode.ON)
             y += childIndex * 1.25 * (getTextSize() + getHeightPadding()) * ((currentDepth % 2) * 2 + -1);
         else if (yOffsetMode == YOffsetMode.AUTO)
             y += autoYOffset(k, multipleKeys, maxDepth) ? childIndex * 1.25 * (getTextSize() + getHeightPadding()) * ((currentDepth % 2) * 2 + -1) : 0;
+        if (layout == TreeLayout.TREE) {
+            y += parentY - Y;
+            viewPanel.getCamera().setViewCenter(0, Math.min(viewPanel.getCamera().getViewCenter().y, y / 2), 0);
+        } else {
+            y += parentY + Y;
+            viewPanel.getCamera().setViewCenter(0, Math.max(viewPanel.getCamera().getViewCenter().y, y / 2), 0);
+        }
         return y;
     }
 
