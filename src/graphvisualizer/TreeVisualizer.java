@@ -257,6 +257,7 @@ public class TreeVisualizer {
             if (layout != TreeLayout.STANDARD_GRAPH)
                 graphRoot.setAttribute("xyz", 0.0, 0.0, 0.0);
             // traverse tree recursive drawing all nodes
+
             if (nodeAmount > 300)
                 if (nodeAmount > 500)
                     if (nodeAmount > 700)
@@ -265,13 +266,8 @@ public class TreeVisualizer {
                         viewPanel.getCamera().setViewPercent(0.35);
                 else
                     viewPanel.getCamera().setViewPercent(0.45);
-            else if (keyAmount > 1) {
-                viewPanel.getCamera().setViewPercent(1.0 + 0.04 * keyAmount);
-            }
-
             addNodesRecursive(root, 1, height);
         }
-
         viewer.getDefaultView().setVisible(true);
 
     }
@@ -353,13 +349,10 @@ public class TreeVisualizer {
             y += childIndex * 1.25 * (getTextSize() + getHeightPadding()) * ((currentDepth % 2) * 2 + -1);
         else if (yOffsetMode == YOffsetMode.AUTO)
             y += autoYOffset(k, multipleKeys, maxDepth) ? childIndex * 1.25 * (getTextSize() + getHeightPadding()) * ((currentDepth % 2) * 2 + -1) : 0;
-        if (layout == TreeLayout.TREE) {
+        if (layout == TreeLayout.TREE)
             y += parentY - Y;
-            viewPanel.getCamera().setViewCenter(0, Math.min(viewPanel.getCamera().getViewCenter().y, y / 2), 0);
-        } else {
+        else
             y += parentY + Y;
-            viewPanel.getCamera().setViewCenter(0, Math.max(viewPanel.getCamera().getViewCenter().y, y / 2), 0);
-        }
         return y;
     }
 
